@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded",()=> {
     try{return JSON.parse(await file.text())}catch(e){throw new Error(label+" is not valid JSON.")}
   }
   function row(label,state,detail){
-    const cls=["VERIFIED","AUTHENTICATED"].includes(state)?"ok":state==="FAILED"?"bad":"neutral";
+    const cls=["VERIFIED","AUTHENTICATED","YES"].includes(state)?"ok":["FAILED","NO"].includes(state)?"bad":"neutral";
     return `<div class="browser-check"><div>${esc(label)}</div><strong class="${cls}">${esc(state)}</strong><div>${detail||"—"}</div></div>`;
   }
   function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
@@ -85,37 +85,36 @@ document.addEventListener("DOMContentLoaded",()=> {
       if(statement.predicateType!=="https://asimov-safety.github.io/asimov/attestation/v0.2") localErrors.push("unexpected predicate type");
 
       let html=row(
-        "Report integrity",
-        localErrors.length?"FAILED":"VERIFIED",
-        localErrors.length?esc(localErrors.join("; ")):"The substantive report content matches the SHA-256 digest bound in the issued statement."
+        "Is this the original report?",
+        localErrors.length?"NO":"YES",
+        localErrors.length
+          ?"This file does not match the report that was originally issued. It may have been edited or damaged."
+          :"Yes. The report content matches the fingerprint recorded when it was issued."
       );
 
       const p=statement.predicate||{};
       const sys=p.system||{};
       if(!localErrors.length){
         html+=`<div class="public-binding">
-          <div><span>Report ID</span><strong>${esc(p.reportId||"—")}</strong></div>
-          <div><span>System</span><strong>${esc(sys.id||"—")}</strong></div>
-          <div><span>Requested profile</span><strong>${esc(p.requestedProfile||"—")}</strong></div>
-          <div><span>Reported outcome</span><strong>${esc(p.reportedOutcome||"—")}</strong></div>
-          <div><span>Assessment mode</span><strong>${esc(p.assessmentMode||"—")}</strong></div>
-          <div><span>Assessor</span><strong>${esc(p.assessor||"—")}</strong></div>
-          <div><span>Assessment created</span><strong>${esc(p.assessmentCreatedAt||"—")}</strong></div>
-          <div><span>Configuration</span><strong title="${esc(sys.configurationSha256||"")}">${esc(shortHash(sys.configurationSha256))}</strong></div>
-          <div><span>Scope binding</span><strong title="${esc(p.scopeManifestSha256||"")}">${esc(shortHash(p.scopeManifestSha256))}</strong></div>
+          <div><span>System tested</span><strong>${esc(sys.id||"—")}</strong></div>
+          <div><span>Assessor listed on report</span><strong>${esc(p.assessor||"—")}</strong></div>
+          <div><span>Assessment type</span><strong>${esc((p.assessmentMode||"—").replaceAll("_"," "))}</strong></div>
+          <div><span>Assurance level requested</span><strong>${esc(p.requestedProfile||"—")}</strong></div>
+          <div><span>Reported result</span><strong>${esc((p.reportedOutcome||"—").replace("REPORTED_","").replaceAll("_"," "))}</strong></div>
+          <div><span>Assessment date</span><strong>${esc(p.assessmentCreatedAt||"—")}</strong></div>
         </div>`;
       }
 
       const sig=record.sigstore;
       const endpoint=document.body.dataset.sigstoreEndpoint||"";
-      let provenanceState="UNSIGNED";
-      let provenanceDetail="No authenticated signer is attached to this report.";
+      let provenanceState="NO SIGNATURE";
+      let provenanceDetail="No digital signature is attached to this report.";
       if(sig && typeof sig==="object"){
         const identity=sig.certificate_identity||"";
         const issuer=sig.certificate_oidc_issuer||"";
         if(!identity || !issuer || !sig.bundle){
-          provenanceState="FAILED";
-          provenanceDetail="The embedded Sigstore material is incomplete.";
+          provenanceState="SIGNATURE ERROR";
+          provenanceDetail="A signature is attached, but its verification information is incomplete.";
         }else if(endpoint){
           const fd=new FormData();
           fd.append("statement",new Blob([record.statement.text],{type:"application/json"}),"asimov-statement.json");
@@ -125,32 +124,34 @@ document.addEventListener("DOMContentLoaded",()=> {
           try{
             const resp=await fetch(endpoint,{method:"POST",body:fd});
             const data=await resp.json();
-            provenanceState=data.verified?"AUTHENTICATED":"FAILED";
+            provenanceState=data.verified?"VERIFIED":"SIGNATURE FAILED";
             provenanceDetail=data.verified
-              ? identity+" — authenticated signer. Identity provider: "+issuer+"."
-              : (data.detail||"Sigstore verification failed.");
+              ? identity+" signed this report, and the signature was independently verified."
+              : "The signature could not be verified. The report should not be treated as authentically signed.";
           }catch(e){
-            provenanceState="FAILED";
-            provenanceDetail="The Sigstore verifier service could not be reached.";
+            provenanceState="CHECK FAILED";
+            provenanceDetail="The signature checker could not be reached. The signature has not been independently verified.";
           }
         }else{
-          provenanceState="NOT CHECKED";
-          provenanceDetail="Signer claimed: "+identity+". Cryptographic signer verification has not been completed in this browser. Identity provider: "+issuer+". Use the CLI command below.";
+          provenanceState="SIGNATURE FOUND";
+          provenanceDetail="This report contains a signature for "+identity+", but this website has not independently checked that signature. Use the local verification command below to confirm it.";
           publicCmd.textContent="asimov verify-report "+shellQuote(reportFile.name);
         }
       }
       html+=row("Who signed this?",provenanceState,esc(provenanceDetail));
 
-      const overall=localErrors.length?"FAILED":provenanceState==="AUTHENTICATED"?"AUTHENTICATED":"LOCAL MATCH";
-      html=row("Public verification",overall,
-        overall==="AUTHENTICATED"
-          ?"The report content is intact and its issued statement has authenticated signer provenance."
-          : overall==="LOCAL MATCH"
-            ?"The report content matches its embedded issued statement. Signer provenance is not cryptographically authenticated here."
-            :"The report failed integrity or provenance checks."
-      )+html;
+      html+=`<div class="verification-explainer"><strong>What does this tell me?</strong><p>If the report check says YES, the report has not been changed since it was issued. If the signer check says VERIFIED, the named account also signed the assessment record. Neither check tells you that the assessment itself was correct or that the system is safe.</p></div>`;
 
-      html+=row("Semantic assurance","SEPARATE REVIEW","A valid signature proves provenance and binding; it does not decide whether the assessment evidence or conclusion is substantively correct.");
+      html+=`<details class="verification-tech"><summary>Technical details</summary>
+        <div class="tech-grid">
+          <div><span>Report ID</span><code>${esc(p.reportId||"—")}</code></div>
+          <div><span>Report fingerprint</span><code>${esc(reportDigest)}</code></div>
+          <div><span>Configuration fingerprint</span><code>${esc(sys.configurationSha256||"—")}</code></div>
+          <div><span>Scope fingerprint</span><code>${esc(p.scopeManifestSha256||"—")}</code></div>
+          <div><span>Signing account recorded</span><code>${esc((sig&&sig.certificate_identity)||"—")}</code></div>
+          <div><span>Identity provider</span><code>${esc((sig&&sig.certificate_oidc_issuer)||"—")}</code></div>
+        </div>
+      </details>`;
       publicOut.innerHTML=html;
     }catch(e){
       publicOut.innerHTML=row("Public verification","FAILED",esc(e.message||e));
