@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded",()=> {
   const $=id=>document.getElementById(id);
   const out=$("verify-results"), cmd=$("cosign-command");
+  const publicOut=$("public-verify-results"), publicCmd=$("public-command");
   const enc=new TextEncoder();
 
   function sorted(v){
@@ -22,13 +23,111 @@ document.addEventListener("DOMContentLoaded",()=> {
     try{return JSON.parse(await file.text())}catch(e){throw new Error(label+" is not valid JSON.")}
   }
   function row(label,state,detail){
-    const cls=state==="VERIFIED"?"ok":state==="FAILED"?"bad":"neutral";
-    return `<div class="browser-check"><div>${label}</div><strong class="${cls}">${state}</strong><div>${detail||"—"}</div></div>`;
+    const cls=["VERIFIED","AUTHENTICATED"].includes(state)?"ok":state==="FAILED"?"bad":"neutral";
+    return `<div class="browser-check"><div>${esc(label)}</div><strong class="${cls}">${esc(state)}</strong><div>${detail||"—"}</div></div>`;
   }
   function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
   function shellQuote(s){return "'"+String(s).replaceAll("'","'\\''")+"'";}
+  function shortHash(s){return typeof s==="string" && s.length>18 ? s.slice(0,12)+"…"+s.slice(-8) : (s||"—");}
 
-  async function verify(){
+  async function verifyPublic(){
+    publicOut.innerHTML="";
+    const reportFile=$("public-report-file").files[0];
+    const recordFile=$("public-record-file").files[0];
+    try{
+      if(!reportFile) throw new Error("Asimov report is required.");
+      const record=await readJson(recordFile,"Public verification record");
+      if(record.version!=="asimov-public-verification/0.2.0") throw new Error("Unsupported public verification record version.");
+      if(!record.report || !record.statement || typeof record.statement.text!=="string") throw new Error("Public verification record is incomplete.");
+
+      const reportDigest=await digestFile(reportFile);
+      const statementDigest=await digestText(record.statement.text);
+      let statement;
+      try{statement=JSON.parse(record.statement.text)}catch(e){throw new Error("Embedded verification statement is invalid JSON.");}
+
+      const subjectName="report/"+record.report.name;
+      const reportSubject=(statement.subject||[]).find(x=>x && x.name===subjectName);
+      const subjectDigest=reportSubject && reportSubject.digest && reportSubject.digest.sha256;
+      const localErrors=[];
+      if(statementDigest!==record.statement.sha256) localErrors.push("embedded statement digest mismatch");
+      if(reportDigest!==record.report.sha256) localErrors.push("report digest mismatch");
+      if(subjectDigest!==reportDigest) localErrors.push("statement does not bind this report digest");
+      if(statement._type!=="https://in-toto.io/Statement/v1") localErrors.push("unexpected statement type");
+      if(statement.predicateType!=="https://asimov-safety.github.io/asimov/attestation/v0.2") localErrors.push("unexpected predicate type");
+
+      let html=row(
+        "Report integrity",
+        localErrors.length?"FAILED":"VERIFIED",
+        localErrors.length?esc(localErrors.join("; ")):"This exact report matches the SHA-256 digest bound in the issued statement."
+      );
+
+      const p=statement.predicate||{};
+      const sys=p.system||{};
+      if(!localErrors.length){
+        html+=`<div class="public-binding">
+          <div><span>Report ID</span><strong>${esc(p.reportId||"—")}</strong></div>
+          <div><span>System</span><strong>${esc(sys.id||"—")}</strong></div>
+          <div><span>Requested profile</span><strong>${esc(p.requestedProfile||"—")}</strong></div>
+          <div><span>Reported outcome</span><strong>${esc(p.reportedOutcome||"—")}</strong></div>
+          <div><span>Assessment mode</span><strong>${esc(p.assessmentMode||"—")}</strong></div>
+          <div><span>Assessment created</span><strong>${esc(p.assessmentCreatedAt||"—")}</strong></div>
+          <div><span>Configuration</span><strong title="${esc(sys.configurationSha256||"")}">${esc(shortHash(sys.configurationSha256))}</strong></div>
+          <div><span>Scope binding</span><strong title="${esc(p.scopeManifestSha256||"")}">${esc(shortHash(p.scopeManifestSha256))}</strong></div>
+        </div>`;
+      }
+
+      const sig=record.sigstore;
+      const endpoint=document.body.dataset.sigstoreEndpoint||"";
+      let provenanceState="UNSIGNED";
+      let provenanceDetail="This report matches its public record, but no authenticated signer proof is included.";
+      if(sig && typeof sig==="object"){
+        const identity=sig.certificate_identity||"";
+        const issuer=sig.certificate_oidc_issuer||"";
+        if(!identity || !issuer || !sig.bundle){
+          provenanceState="FAILED";
+          provenanceDetail="The public record contains incomplete Sigstore material.";
+        }else if(endpoint){
+          const fd=new FormData();
+          fd.append("statement",new Blob([record.statement.text],{type:"application/json"}),"asimov-statement.json");
+          fd.append("bundle",new Blob([JSON.stringify(sig.bundle)],{type:"application/json"}),"asimov.sigstore.json");
+          fd.append("certificate_identity",identity);
+          fd.append("certificate_oidc_issuer",issuer);
+          try{
+            const resp=await fetch(endpoint,{method:"POST",body:fd});
+            const data=await resp.json();
+            provenanceState=data.verified?"AUTHENTICATED":"FAILED";
+            provenanceDetail=data.verified
+              ? "Sigstore verified the exact statement for "+identity+" via "+issuer+"."
+              : (data.detail||"Sigstore verification failed.");
+          }catch(e){
+            provenanceState="FAILED";
+            provenanceDetail="The Sigstore verifier service could not be reached.";
+          }
+        }else{
+          provenanceState="NOT CHECKED";
+          provenanceDetail="Sigstore material is present for "+identity+" via "+issuer+", but this site has no online cryptographic verifier configured. Use the CLI command below.";
+          publicCmd.textContent="asimov verify-report "+shellQuote(reportFile.name)+" "+shellQuote(recordFile.name);
+        }
+      }
+      html+=row("Signer provenance",provenanceState,esc(provenanceDetail));
+
+      const overall=localErrors.length?"FAILED":provenanceState==="AUTHENTICATED"?"AUTHENTICATED":"LOCAL MATCH";
+      html=row("Public verification",overall,
+        overall==="AUTHENTICATED"
+          ?"The report is intact and its issued statement has authenticated signer provenance."
+          : overall==="LOCAL MATCH"
+            ?"The report matches the published verification record. Signer provenance is not cryptographically authenticated here."
+            :"The supplied report or verification record failed integrity checks."
+      )+html;
+
+      html+=row("Semantic assurance","SEPARATE REVIEW","A valid signature proves provenance and binding; it does not decide whether the assessment evidence or conclusion is substantively correct.");
+      publicOut.innerHTML=html;
+    }catch(e){
+      publicOut.innerHTML=row("Public verification","FAILED",esc(e.message||e));
+    }
+  }
+
+  async function verifyFull(){
     out.innerHTML="";
     cmd.textContent="";
     const assessmentFile=$("assessment-file").files[0];
@@ -69,7 +168,7 @@ document.addEventListener("DOMContentLoaded",()=> {
           if(await digestFile(file)!==item.sha256) errors.push("digest "+item.path);
         }
         for(const p of selected.keys()) if(!bound.has(p)) errors.push("unbound "+p);
-        html+=row("Evidence files",errors.length?"FAILED":"VERIFIED",errors.length?errors.slice(0,8).join("; "):"Selected directory matches the manifest.");
+        html+=row("Evidence files",errors.length?"FAILED":"VERIFIED",errors.length?esc(errors.slice(0,8).join("; ")):"Selected directory matches the manifest.");
       } else {
         html+=row("Evidence files","NOT CHECKED","Select the evidence directory to verify every bound file locally.");
       }
@@ -86,7 +185,7 @@ document.addEventListener("DOMContentLoaded",()=> {
       }
       for(const name of actualSubjects.keys()) if(!expectedSubjects.has(name)) subjectErrors.push("unexpected subject "+name);
       const subjectOk=subjectErrors.length===0;
-      html+=row("Artifact binding",subjectOk?"VERIFIED":"FAILED",subjectOk?"Assessment, manifest"+(reportFile?", and report":"")+" hashes match the signed-subject statement.":esc(subjectErrors.join("; ")));
+      html+=row("Artifact binding",subjectOk?"VERIFIED":"FAILED",subjectOk?"Assessment, manifest"+(reportFile?", and report":"")+" hashes match the statement.":esc(subjectErrors.join("; ")));
 
       const p=statement.predicate||{};
       const predicateErrors=[];
@@ -135,6 +234,7 @@ document.addEventListener("DOMContentLoaded",()=> {
     }
   }
 
-  $("verify-local").addEventListener("click",verify);
+  $("verify-public").addEventListener("click",verifyPublic);
+  $("verify-local").addEventListener("click",verifyFull);
   $("copy-cosign").addEventListener("click",async()=>{if(cmd.textContent) await navigator.clipboard.writeText(cmd.textContent)});
 });
