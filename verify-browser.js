@@ -33,14 +33,26 @@ document.addEventListener("DOMContentLoaded",()=> {
   async function verifyPublic(){
     publicOut.innerHTML="";
     const reportFile=$("public-report-file").files[0];
-    const recordFile=$("public-record-file").files[0];
     try{
-      if(!reportFile) throw new Error("Asimov report is required.");
-      const record=await readJson(recordFile,"Public verification record");
-      if(record.version!=="asimov-public-verification/0.2.0") throw new Error("Unsupported public verification record version.");
-      if(!record.report || !record.statement || typeof record.statement.text!=="string") throw new Error("Public verification record is incomplete.");
+      if(!reportFile) throw new Error("Asimov HTML report is required.");
+      const reportText=await reportFile.text();
+      const capsuleStart="<!-- ASIMOV-PUBLIC-VERIFICATION-START -->";
+      const capsuleEnd="<!-- ASIMOV-PUBLIC-VERIFICATION-END -->";
+      const startIndex=reportText.indexOf(capsuleStart);
+      const endIndex=reportText.indexOf(capsuleEnd);
+      if(startIndex<0 || endIndex<startIndex) throw new Error("This report does not contain an Asimov public verification capsule.");
 
-      const reportDigest=await digestFile(reportFile);
+      const capsule=reportText.slice(startIndex+capsuleStart.length,endIndex);
+      const match=capsule.match(/<script type="application\/json" id="asimov-public-verification">([\s\S]*?)<\/script>/);
+      if(!match) throw new Error("Embedded Asimov verification capsule is malformed.");
+
+      let record;
+      try{record=JSON.parse(match[1])}catch(e){throw new Error("Embedded Asimov verification record is invalid JSON.");}
+      if(record.version!=="asimov-public-verification/0.2.0") throw new Error("Unsupported public verification record version.");
+      if(!record.report || !record.statement || typeof record.statement.text!=="string") throw new Error("Embedded public verification record is incomplete.");
+
+      const unsignedReport=reportText.slice(0,startIndex)+reportText.slice(endIndex+capsuleEnd.length);
+      const reportDigest=await digestText(unsignedReport);
       const statementDigest=await digestText(record.statement.text);
       let statement;
       try{statement=JSON.parse(record.statement.text)}catch(e){throw new Error("Embedded verification statement is invalid JSON.");}
@@ -50,15 +62,15 @@ document.addEventListener("DOMContentLoaded",()=> {
       const subjectDigest=reportSubject && reportSubject.digest && reportSubject.digest.sha256;
       const localErrors=[];
       if(statementDigest!==record.statement.sha256) localErrors.push("embedded statement digest mismatch");
-      if(reportDigest!==record.report.sha256) localErrors.push("report digest mismatch");
-      if(subjectDigest!==reportDigest) localErrors.push("statement does not bind this report digest");
+      if(reportDigest!==record.report.sha256) localErrors.push("report content digest mismatch");
+      if(subjectDigest!==reportDigest) localErrors.push("statement does not bind this report content digest");
       if(statement._type!=="https://in-toto.io/Statement/v1") localErrors.push("unexpected statement type");
       if(statement.predicateType!=="https://asimov-safety.github.io/asimov/attestation/v0.2") localErrors.push("unexpected predicate type");
 
       let html=row(
         "Report integrity",
         localErrors.length?"FAILED":"VERIFIED",
-        localErrors.length?esc(localErrors.join("; ")):"This exact report matches the SHA-256 digest bound in the issued statement."
+        localErrors.length?esc(localErrors.join("; ")):"The substantive report content matches the SHA-256 digest bound in the issued statement."
       );
 
       const p=statement.predicate||{};
@@ -80,13 +92,13 @@ document.addEventListener("DOMContentLoaded",()=> {
       const sig=record.sigstore;
       const endpoint=document.body.dataset.sigstoreEndpoint||"";
       let provenanceState="UNSIGNED";
-      let provenanceDetail="This report matches its public record, but no authenticated signer proof is included.";
+      let provenanceDetail="The report is internally bound to its issued statement, but no authenticated signer proof is embedded.";
       if(sig && typeof sig==="object"){
         const identity=sig.certificate_identity||"";
         const issuer=sig.certificate_oidc_issuer||"";
         if(!identity || !issuer || !sig.bundle){
           provenanceState="FAILED";
-          provenanceDetail="The public record contains incomplete Sigstore material.";
+          provenanceDetail="The embedded Sigstore material is incomplete.";
         }else if(endpoint){
           const fd=new FormData();
           fd.append("statement",new Blob([record.statement.text],{type:"application/json"}),"asimov-statement.json");
@@ -106,8 +118,8 @@ document.addEventListener("DOMContentLoaded",()=> {
           }
         }else{
           provenanceState="NOT CHECKED";
-          provenanceDetail="Sigstore material is present for "+identity+" via "+issuer+", but this site has no online cryptographic verifier configured. Use the CLI command below.";
-          publicCmd.textContent="asimov verify-report "+shellQuote(reportFile.name)+" "+shellQuote(recordFile.name);
+          provenanceDetail="Sigstore material is embedded for "+identity+" via "+issuer+", but this site has no online cryptographic verifier configured. Use the CLI command below.";
+          publicCmd.textContent="asimov verify-report "+shellQuote(reportFile.name);
         }
       }
       html+=row("Signer provenance",provenanceState,esc(provenanceDetail));
@@ -115,10 +127,10 @@ document.addEventListener("DOMContentLoaded",()=> {
       const overall=localErrors.length?"FAILED":provenanceState==="AUTHENTICATED"?"AUTHENTICATED":"LOCAL MATCH";
       html=row("Public verification",overall,
         overall==="AUTHENTICATED"
-          ?"The report is intact and its issued statement has authenticated signer provenance."
+          ?"The report content is intact and its issued statement has authenticated signer provenance."
           : overall==="LOCAL MATCH"
-            ?"The report matches the published verification record. Signer provenance is not cryptographically authenticated here."
-            :"The supplied report or verification record failed integrity checks."
+            ?"The report content matches its embedded issued statement. Signer provenance is not cryptographically authenticated here."
+            :"The report failed integrity or provenance checks."
       )+html;
 
       html+=row("Semantic assurance","SEPARATE REVIEW","A valid signature proves provenance and binding; it does not decide whether the assessment evidence or conclusion is substantively correct.");
