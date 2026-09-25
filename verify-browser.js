@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded",()=> {
       const sig=record.sigstore;
       const endpoint=document.body.dataset.sigstoreEndpoint||"";
       let provenanceState="UNSIGNED";
-      let provenanceDetail="The report is internally bound to its issued statement, but no authenticated signer proof is embedded.";
+      let provenanceDetail="No authenticated signer is attached to this report.";
       if(sig && typeof sig==="object"){
         const identity=sig.certificate_identity||"";
         const issuer=sig.certificate_oidc_issuer||"";
@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded",()=> {
             const data=await resp.json();
             provenanceState=data.verified?"AUTHENTICATED":"FAILED";
             provenanceDetail=data.verified
-              ? "Sigstore verified the exact statement for "+identity+" via "+issuer+"."
+              ? identity+" — authenticated signer. Identity provider: "+issuer+"."
               : (data.detail||"Sigstore verification failed.");
           }catch(e){
             provenanceState="FAILED";
@@ -132,11 +132,11 @@ document.addEventListener("DOMContentLoaded",()=> {
           }
         }else{
           provenanceState="NOT CHECKED";
-          provenanceDetail="Sigstore material is embedded for "+identity+" via "+issuer+", but this site has no online cryptographic verifier configured. Use the CLI command below.";
+          provenanceDetail="Signer claimed: "+identity+". Cryptographic signer verification has not been completed in this browser. Identity provider: "+issuer+". Use the CLI command below.";
           publicCmd.textContent="asimov verify-report "+shellQuote(reportFile.name);
         }
       }
-      html+=row("Signer provenance",provenanceState,esc(provenanceDetail));
+      html+=row("Who signed this?",provenanceState,esc(provenanceDetail));
 
       const overall=localErrors.length?"FAILED":provenanceState==="AUTHENTICATED"?"AUTHENTICATED":"LOCAL MATCH";
       html=row("Public verification",overall,
