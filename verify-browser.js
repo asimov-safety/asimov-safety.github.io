@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded",()=> {
   const $=id=>document.getElementById(id);
   const out=$("verify-results"), cmd=$("cosign-command");
+  const publicOut=$("public-verify-results"), publicCmd=$("public-command");
   const enc=new TextEncoder();
 
   function sorted(v){
@@ -17,18 +18,146 @@ document.addEventListener("DOMContentLoaded",()=> {
   }
   async function digestFile(file){ return hexDigestBytes(await file.arrayBuffer()); }
   async function digestText(text){ return hexDigestBytes(enc.encode(text)); }
+  function normalizeReportText(text){
+    return String(text).replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+  }
+  function stripPublicCapsule(text){
+    const start="<!-- ASIMOV-PUBLIC-VERIFICATION-START -->";
+    const end="<!-- ASIMOV-PUBLIC-VERIFICATION-END -->";
+    const a=text.indexOf(start), b=text.indexOf(end);
+    if(a<0 || b<a) return text;
+    return text.slice(0,a)+text.slice(b+end.length);
+  }
+  async function digestReportFile(file){
+    if(!file) return null;
+    if((file.name||"").toLowerCase().endsWith(".html") || file.type==="text/html"){
+      return digestText(stripPublicCapsule(normalizeReportText(await file.text())));
+    }
+    return digestFile(file);
+  }
   async function readJson(file,label){
     if(!file) throw new Error(label+" is required.");
     try{return JSON.parse(await file.text())}catch(e){throw new Error(label+" is not valid JSON.")}
   }
   function row(label,state,detail){
-    const cls=state==="VERIFIED"?"ok":state==="FAILED"?"bad":"neutral";
-    return `<div class="browser-check"><div>${label}</div><strong class="${cls}">${state}</strong><div>${detail||"—"}</div></div>`;
+    const cls=["VERIFIED","AUTHENTICATED"].includes(state)?"ok":state==="FAILED"?"bad":"neutral";
+    return `<div class="browser-check"><div>${esc(label)}</div><strong class="${cls}">${esc(state)}</strong><div>${detail||"—"}</div></div>`;
   }
   function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
   function shellQuote(s){return "'"+String(s).replaceAll("'","'\\''")+"'";}
+  function shortHash(s){return typeof s==="string" && s.length>18 ? s.slice(0,12)+"…"+s.slice(-8) : (s||"—");}
 
-  async function verify(){
+  async function verifyPublic(){
+    publicOut.innerHTML="";
+    const reportFile=$("public-report-file").files[0];
+    try{
+      if(!reportFile) throw new Error("Asimov HTML report is required.");
+      const reportText=await reportFile.text();
+      const capsuleStart="<!-- ASIMOV-PUBLIC-VERIFICATION-START -->";
+      const capsuleEnd="<!-- ASIMOV-PUBLIC-VERIFICATION-END -->";
+      const startIndex=reportText.indexOf(capsuleStart);
+      const endIndex=reportText.indexOf(capsuleEnd);
+      if(startIndex<0 || endIndex<startIndex) throw new Error("This report does not contain an Asimov public verification capsule.");
+
+      const capsule=reportText.slice(startIndex+capsuleStart.length,endIndex);
+      const match=capsule.match(/<script type="application\/json" id="asimov-public-verification">([\s\S]*?)<\/script>/);
+      if(!match) throw new Error("Embedded Asimov verification capsule is malformed.");
+
+      let record;
+      try{record=JSON.parse(match[1])}catch(e){throw new Error("Embedded Asimov verification record is invalid JSON.");}
+      if(record.version!=="asimov-public-verification/0.2.0") throw new Error("Unsupported public verification record version.");
+      if(!record.report || !record.statement || typeof record.statement.text!=="string") throw new Error("Embedded public verification record is incomplete.");
+
+      const unsignedReport=stripPublicCapsule(normalizeReportText(reportText));
+      const reportDigest=await digestText(unsignedReport);
+      const statementDigest=await digestText(record.statement.text);
+      let statement;
+      try{statement=JSON.parse(record.statement.text)}catch(e){throw new Error("Embedded verification statement is invalid JSON.");}
+
+      const subjectName="report/"+record.report.name;
+      const reportSubject=(statement.subject||[]).find(x=>x && x.name===subjectName);
+      const subjectDigest=reportSubject && reportSubject.digest && reportSubject.digest.sha256;
+      const localErrors=[];
+      if(statementDigest!==record.statement.sha256) localErrors.push("embedded statement digest mismatch");
+      if(reportDigest!==record.report.sha256) localErrors.push("report content digest mismatch");
+      if(subjectDigest!==reportDigest) localErrors.push("statement does not bind this report content digest");
+      if(statement._type!=="https://in-toto.io/Statement/v1") localErrors.push("unexpected statement type");
+      if(statement.predicateType!=="https://asimov-safety.github.io/asimov/attestation/v0.2") localErrors.push("unexpected predicate type");
+
+      let html=row(
+        "Report integrity",
+        localErrors.length?"FAILED":"VERIFIED",
+        localErrors.length?esc(localErrors.join("; ")):"The substantive report content matches the SHA-256 digest bound in the issued statement."
+      );
+
+      const p=statement.predicate||{};
+      const sys=p.system||{};
+      if(!localErrors.length){
+        html+=`<div class="public-binding">
+          <div><span>Report ID</span><strong>${esc(p.reportId||"—")}</strong></div>
+          <div><span>System</span><strong>${esc(sys.id||"—")}</strong></div>
+          <div><span>Requested profile</span><strong>${esc(p.requestedProfile||"—")}</strong></div>
+          <div><span>Reported outcome</span><strong>${esc(p.reportedOutcome||"—")}</strong></div>
+          <div><span>Assessment mode</span><strong>${esc(p.assessmentMode||"—")}</strong></div>
+          <div><span>Assessor</span><strong>${esc(p.assessor||"—")}</strong></div>
+          <div><span>Assessment created</span><strong>${esc(p.assessmentCreatedAt||"—")}</strong></div>
+          <div><span>Configuration</span><strong title="${esc(sys.configurationSha256||"")}">${esc(shortHash(sys.configurationSha256))}</strong></div>
+          <div><span>Scope binding</span><strong title="${esc(p.scopeManifestSha256||"")}">${esc(shortHash(p.scopeManifestSha256))}</strong></div>
+        </div>`;
+      }
+
+      const sig=record.sigstore;
+      const endpoint=document.body.dataset.sigstoreEndpoint||"";
+      let provenanceState="UNSIGNED";
+      let provenanceDetail="No authenticated signer is attached to this report.";
+      if(sig && typeof sig==="object"){
+        const identity=sig.certificate_identity||"";
+        const issuer=sig.certificate_oidc_issuer||"";
+        if(!identity || !issuer || !sig.bundle){
+          provenanceState="FAILED";
+          provenanceDetail="The embedded Sigstore material is incomplete.";
+        }else if(endpoint){
+          const fd=new FormData();
+          fd.append("statement",new Blob([record.statement.text],{type:"application/json"}),"asimov-statement.json");
+          fd.append("bundle",new Blob([JSON.stringify(sig.bundle)],{type:"application/json"}),"asimov.sigstore.json");
+          fd.append("certificate_identity",identity);
+          fd.append("certificate_oidc_issuer",issuer);
+          try{
+            const resp=await fetch(endpoint,{method:"POST",body:fd});
+            const data=await resp.json();
+            provenanceState=data.verified?"AUTHENTICATED":"FAILED";
+            provenanceDetail=data.verified
+              ? identity+" — authenticated signer. Identity provider: "+issuer+"."
+              : (data.detail||"Sigstore verification failed.");
+          }catch(e){
+            provenanceState="FAILED";
+            provenanceDetail="The Sigstore verifier service could not be reached.";
+          }
+        }else{
+          provenanceState="NOT CHECKED";
+          provenanceDetail="Signer claimed: "+identity+". Cryptographic signer verification has not been completed in this browser. Identity provider: "+issuer+". Use the CLI command below.";
+          publicCmd.textContent="asimov verify-report "+shellQuote(reportFile.name);
+        }
+      }
+      html+=row("Who signed this?",provenanceState,esc(provenanceDetail));
+
+      const overall=localErrors.length?"FAILED":provenanceState==="AUTHENTICATED"?"AUTHENTICATED":"LOCAL MATCH";
+      html=row("Public verification",overall,
+        overall==="AUTHENTICATED"
+          ?"The report content is intact and its issued statement has authenticated signer provenance."
+          : overall==="LOCAL MATCH"
+            ?"The report content matches its embedded issued statement. Signer provenance is not cryptographically authenticated here."
+            :"The report failed integrity or provenance checks."
+      )+html;
+
+      html+=row("Semantic assurance","SEPARATE REVIEW","A valid signature proves provenance and binding; it does not decide whether the assessment evidence or conclusion is substantively correct.");
+      publicOut.innerHTML=html;
+    }catch(e){
+      publicOut.innerHTML=row("Public verification","FAILED",esc(e.message||e));
+    }
+  }
+
+  async function verifyFull(){
     out.innerHTML="";
     cmd.textContent="";
     const assessmentFile=$("assessment-file").files[0];
@@ -69,7 +198,7 @@ document.addEventListener("DOMContentLoaded",()=> {
           if(await digestFile(file)!==item.sha256) errors.push("digest "+item.path);
         }
         for(const p of selected.keys()) if(!bound.has(p)) errors.push("unbound "+p);
-        html+=row("Evidence files",errors.length?"FAILED":"VERIFIED",errors.length?errors.slice(0,8).join("; "):"Selected directory matches the manifest.");
+        html+=row("Evidence files",errors.length?"FAILED":"VERIFIED",errors.length?esc(errors.slice(0,8).join("; ")):"Selected directory matches the manifest.");
       } else {
         html+=row("Evidence files","NOT CHECKED","Select the evidence directory to verify every bound file locally.");
       }
@@ -77,25 +206,33 @@ document.addEventListener("DOMContentLoaded",()=> {
       const expectedSubjects=new Map();
       expectedSubjects.set("asimov-assessment",await digestFile(assessmentFile));
       expectedSubjects.set("asimov-evidence-manifest",await digestFile(manifestFile));
-      if(reportFile) expectedSubjects.set("report/"+reportFile.name,await digestFile(reportFile));
+      if(reportFile) expectedSubjects.set("report/"+reportFile.name,await digestReportFile(reportFile));
       const actualSubjects=new Map((statement.subject||[]).map(x=>[x.name,x.digest&&x.digest.sha256]));
-      let subjectOk=expectedSubjects.size===actualSubjects.size;
-      if(subjectOk) for(const [k,v] of expectedSubjects) if(actualSubjects.get(k)!==v) subjectOk=false;
-      html+=row("Artifact binding",subjectOk?"VERIFIED":"FAILED",subjectOk?"Assessment, manifest"+(reportFile?", and report":"")+" hashes match the signed-subject statement.":"Statement subject digests do not match the selected artifacts.");
+      const subjectErrors=[];
+      for(const [name,digest] of expectedSubjects){
+        if(!actualSubjects.has(name)) subjectErrors.push("missing subject "+name);
+        else if(actualSubjects.get(name)!==digest) subjectErrors.push("digest mismatch "+name);
+      }
+      for(const name of actualSubjects.keys()) if(!expectedSubjects.has(name)) subjectErrors.push("unexpected subject "+name);
+      const subjectOk=subjectErrors.length===0;
+      html+=row("Artifact binding",subjectOk?"VERIFIED":"FAILED",subjectOk?"Assessment, manifest"+(reportFile?", and report":"")+" hashes match the statement.":esc(subjectErrors.join("; ")));
 
       const p=statement.predicate||{};
-      const predicateOk=
-        statement._type==="https://in-toto.io/Statement/v1" &&
-        statement.predicateType==="https://asimov-safety.github.io/asimov/attestation/v0.2" &&
-        p.specVersion===assessment.spec_version &&
-        p.reportId===assessment.report_id &&
-        p.system && p.system.id===assessment.system.id &&
-        p.system.configurationSha256===assessment.system.configuration_sha256 &&
-        p.scopeManifestSha256===assessment.scope_manifest_sha256 &&
-        p.requestedProfile===assessment.requested_profile &&
-        p.assessmentMode===assessment.assessment.mode &&
-        p.evidenceManifestSha256===manifest.manifest_sha256;
-      html+=row("Scope & configuration",predicateOk?"VERIFIED":"FAILED",predicateOk?"Statement predicate matches the assessment scope and configuration.":"Statement predicate does not match the assessment.");
+      const predicateErrors=[];
+      const check=(ok,label)=>{if(!ok) predicateErrors.push(label)};
+      check(statement._type==="https://in-toto.io/Statement/v1","statement type");
+      check(statement.predicateType==="https://asimov-safety.github.io/asimov/attestation/v0.2","predicate type");
+      check(p.specVersion===assessment.spec_version,"spec version");
+      check(p.reportId===assessment.report_id,"report ID");
+      check(p.system && p.system.id===assessment.system.id,"system ID");
+      check(p.system && p.system.configurationSha256===assessment.system.configuration_sha256,"configuration SHA-256");
+      check(p.scopeManifestSha256===assessment.scope_manifest_sha256,"scope manifest SHA-256");
+      check(p.requestedProfile===assessment.requested_profile,"requested profile");
+      check(p.assessmentMode===(assessment.assessment&&assessment.assessment.mode),"assessment mode");
+      check(p.assessor===(assessment.assessment&&assessment.assessment.assessor),"assessor");
+      check(p.evidenceManifestSha256===manifest.manifest_sha256,"evidence manifest SHA-256");
+      const predicateOk=predicateErrors.length===0;
+      html+=row("Scope & configuration",predicateOk?"VERIFIED":"FAILED",predicateOk?"Statement predicate matches the assessment scope and configuration.":esc("Mismatched: "+predicateErrors.join(", ")));
 
       const endpoint=document.body.dataset.sigstoreEndpoint||"";
       if(bundleFile && identity && issuer && endpoint){
@@ -128,6 +265,7 @@ document.addEventListener("DOMContentLoaded",()=> {
     }
   }
 
-  $("verify-local").addEventListener("click",verify);
+  $("verify-public").addEventListener("click",verifyPublic);
+  $("verify-local").addEventListener("click",verifyFull);
   $("copy-cosign").addEventListener("click",async()=>{if(cmd.textContent) await navigator.clipboard.writeText(cmd.textContent)});
 });
