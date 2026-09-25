@@ -17,7 +17,8 @@
         "ARCHITECTURE_REVIEW",
         "DISCOVERY_PROBE"
       ],
-      "automation": "HYBRID"
+      "automation": "HYBRID",
+      "review_requirement": "HUMAN"
     },
     {
       "id": "OBS-002",
@@ -35,7 +36,8 @@
         "DETERMINISTIC_PROBE",
         "RESOURCE_OBSERVATION"
       ],
-      "automation": "ADAPTER_AUTOMATABLE"
+      "automation": "ADAPTER_AUTOMATABLE",
+      "review_requirement": "NONE"
     },
     {
       "id": "OBS-003",
@@ -53,7 +55,8 @@
         "IDENTITY_PROBE",
         "DETERMINISTIC_PROBE"
       ],
-      "automation": "ADAPTER_AUTOMATABLE"
+      "automation": "ADAPTER_AUTOMATABLE",
+      "review_requirement": "NONE"
     },
     {
       "id": "OBS-004",
@@ -71,7 +74,8 @@
         "FAULT_INJECTION",
         "RESOURCE_OBSERVATION"
       ],
-      "automation": "ADAPTER_AUTOMATABLE"
+      "automation": "ADAPTER_AUTOMATABLE",
+      "review_requirement": "NONE"
     },
     {
       "id": "MED-001",
@@ -89,7 +93,8 @@
         "DETERMINISTIC_PROBE",
         "RESOURCE_OBSERVATION"
       ],
-      "automation": "ADAPTER_AUTOMATABLE"
+      "automation": "ADAPTER_AUTOMATABLE",
+      "review_requirement": "NONE"
     },
     {
       "id": "MED-002",
@@ -107,7 +112,8 @@
         "PRIVILEGE_REVIEW",
         "BYPASS_PROBE"
       ],
-      "automation": "HYBRID"
+      "automation": "HYBRID",
+      "review_requirement": "HUMAN"
     },
     {
       "id": "MED-003",
@@ -125,7 +131,8 @@
         "DETERMINISTIC_PROBE",
         "CONCURRENCY_PROBE"
       ],
-      "automation": "ADAPTER_AUTOMATABLE"
+      "automation": "ADAPTER_AUTOMATABLE",
+      "review_requirement": "NONE"
     },
     {
       "id": "MED-004",
@@ -143,7 +150,8 @@
         "FAULT_INJECTION",
         "RECOVERY_PROBE"
       ],
-      "automation": "ADAPTER_AUTOMATABLE"
+      "automation": "ADAPTER_AUTOMATABLE",
+      "review_requirement": "NONE"
     },
     {
       "id": "REV-001",
@@ -161,7 +169,8 @@
         "REVOCATION_PROBE",
         "TIMING_MEASUREMENT"
       ],
-      "automation": "ADAPTER_AUTOMATABLE"
+      "automation": "ADAPTER_AUTOMATABLE",
+      "review_requirement": "NONE"
     },
     {
       "id": "REV-002",
@@ -179,7 +188,8 @@
         "REVOCATION_PROBE",
         "FAULT_INJECTION"
       ],
-      "automation": "ADAPTER_AUTOMATABLE"
+      "automation": "ADAPTER_AUTOMATABLE",
+      "review_requirement": "NONE"
     },
     {
       "id": "REV-003",
@@ -197,7 +207,8 @@
         "REVOCATION_PROBE",
         "RESTART_PROBE"
       ],
-      "automation": "ADAPTER_AUTOMATABLE"
+      "automation": "ADAPTER_AUTOMATABLE",
+      "review_requirement": "NONE"
     },
     {
       "id": "REV-004",
@@ -215,7 +226,8 @@
         "DELEGATION_PROBE",
         "REVOCATION_PROBE"
       ],
-      "automation": "ADAPTER_AUTOMATABLE"
+      "automation": "ADAPTER_AUTOMATABLE",
+      "review_requirement": "NONE"
     },
     {
       "id": "OVR-001",
@@ -233,7 +245,8 @@
         "PRIVILEGE_REVIEW",
         "TAMPER_PROBE"
       ],
-      "automation": "HYBRID"
+      "automation": "HYBRID",
+      "review_requirement": "HUMAN"
     },
     {
       "id": "OVR-002",
@@ -251,7 +264,8 @@
         "AUTHENTICATION_PROBE",
         "REPLAY_PROBE"
       ],
-      "automation": "ADAPTER_AUTOMATABLE"
+      "automation": "ADAPTER_AUTOMATABLE",
+      "review_requirement": "NONE"
     },
     {
       "id": "OVR-003",
@@ -269,7 +283,8 @@
         "ARCHITECTURE_REVIEW",
         "FAULT_INJECTION"
       ],
-      "automation": "HYBRID"
+      "automation": "HYBRID",
+      "review_requirement": "HUMAN"
     },
     {
       "id": "OVR-004",
@@ -287,7 +302,8 @@
         "ADVERSARIAL_CAMPAIGN",
         "BYPASS_PROBE"
       ],
-      "automation": "HYBRID"
+      "automation": "HYBRID",
+      "review_requirement": "HUMAN"
     },
     {
       "id": "DEL-001",
@@ -305,7 +321,8 @@
         "DELEGATION_PROBE",
         "RESOURCE_OBSERVATION"
       ],
-      "automation": "ADAPTER_AUTOMATABLE"
+      "automation": "ADAPTER_AUTOMATABLE",
+      "review_requirement": "NONE"
     },
     {
       "id": "DEL-002",
@@ -323,7 +340,8 @@
         "CONCURRENCY_PROBE",
         "BUDGET_PROBE"
       ],
-      "automation": "ADAPTER_AUTOMATABLE"
+      "automation": "ADAPTER_AUTOMATABLE",
+      "review_requirement": "NONE"
     },
     {
       "id": "DEL-003",
@@ -341,7 +359,8 @@
         "DELEGATION_PROBE",
         "LIFECYCLE_PROBE"
       ],
-      "automation": "ADAPTER_AUTOMATABLE"
+      "automation": "ADAPTER_AUTOMATABLE",
+      "review_requirement": "NONE"
     },
     {
       "id": "DEL-004",
@@ -359,7 +378,8 @@
         "TRUST_BOUNDARY_REVIEW",
         "DELEGATION_PROBE"
       ],
-      "automation": "HYBRID"
+      "automation": "HYBRID",
+      "review_requirement": "HUMAN"
     },
     {
       "id": "HUM-001",
@@ -377,7 +397,8 @@
         "HUMAN_EXERCISE",
         "TIMING_MEASUREMENT"
       ],
-      "automation": "HYBRID"
+      "automation": "HYBRID",
+      "review_requirement": "HUMAN"
     },
     {
       "id": "HUM-002",
@@ -395,7 +416,8 @@
         "HUMAN_EXERCISE",
         "APPROVAL_BINDING_PROBE"
       ],
-      "automation": "HYBRID"
+      "automation": "HYBRID",
+      "review_requirement": "HUMAN"
     },
     {
       "id": "HUM-003",
@@ -413,7 +435,8 @@
         "HUMAN_EXERCISE",
         "RESTART_PROBE"
       ],
-      "automation": "HYBRID"
+      "automation": "HYBRID",
+      "review_requirement": "HUMAN"
     },
     {
       "id": "HUM-004",
@@ -432,7 +455,8 @@
         "FAULT_INJECTION",
         "LOAD_TEST"
       ],
-      "automation": "REVIEW_REQUIRED"
+      "automation": "REVIEW_REQUIRED",
+      "review_requirement": "HUMAN"
     },
     {
       "id": "ACC-001",
@@ -450,7 +474,8 @@
         "EVIDENCE_REPLAY",
         "REVIEW_EXERCISE"
       ],
-      "automation": "HYBRID"
+      "automation": "HYBRID",
+      "review_requirement": "HUMAN"
     },
     {
       "id": "ACC-002",
@@ -468,7 +493,8 @@
         "TAMPER_PROBE",
         "CRYPTOGRAPHIC_VERIFICATION"
       ],
-      "automation": "ADAPTER_AUTOMATABLE"
+      "automation": "ADAPTER_AUTOMATABLE",
+      "review_requirement": "NONE"
     },
     {
       "id": "ACC-003",
@@ -486,7 +512,8 @@
         "ACCESS_CONTROL_PROBE",
         "DATA_HANDLING_REVIEW"
       ],
-      "automation": "HYBRID"
+      "automation": "HYBRID",
+      "review_requirement": "HUMAN"
     },
     {
       "id": "ACC-004",
@@ -504,7 +531,8 @@
         "REPORT_VALIDATION",
         "CHANGE_IMPACT_REVIEW"
       ],
-      "automation": "HYBRID"
+      "automation": "HYBRID",
+      "review_requirement": "HUMAN"
     },
     {
       "id": "OBS-005",
@@ -523,7 +551,8 @@
         "FAULT_INJECTION"
       ],
       "automation": "HYBRID",
-      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED"
+      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED",
+      "review_requirement": "ROLE_SEPARATED"
     },
     {
       "id": "MED-005",
@@ -542,7 +571,8 @@
         "ADVERSARIAL_CAMPAIGN"
       ],
       "automation": "HYBRID",
-      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED"
+      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED",
+      "review_requirement": "ROLE_SEPARATED"
     },
     {
       "id": "REV-005",
@@ -561,7 +591,8 @@
         "TIMING_MEASUREMENT"
       ],
       "automation": "ADAPTER_AUTOMATABLE",
-      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED"
+      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED",
+      "review_requirement": "NONE"
     },
     {
       "id": "OVR-005",
@@ -580,7 +611,8 @@
         "ADVERSARIAL_CAMPAIGN"
       ],
       "automation": "HYBRID",
-      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED"
+      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED",
+      "review_requirement": "ROLE_SEPARATED"
     },
     {
       "id": "DEL-005",
@@ -599,7 +631,8 @@
         "DELEGATION_PROBE"
       ],
       "automation": "ADAPTER_AUTOMATABLE",
-      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED"
+      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED",
+      "review_requirement": "NONE"
     },
     {
       "id": "HUM-005",
@@ -618,7 +651,8 @@
         "HUMAN_EXERCISE"
       ],
       "automation": "HYBRID",
-      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED"
+      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED",
+      "review_requirement": "ROLE_SEPARATED"
     },
     {
       "id": "ACC-005",
@@ -636,7 +670,8 @@
         "EVIDENCE_REVIEW"
       ],
       "automation": "ADAPTER_AUTOMATABLE",
-      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED"
+      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED",
+      "review_requirement": "NONE"
     },
     {
       "id": "OBS-006",
@@ -655,7 +690,8 @@
         "FAULT_INJECTION"
       ],
       "automation": "REVIEW_REQUIRED",
-      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED"
+      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED",
+      "review_requirement": "ROLE_SEPARATED"
     },
     {
       "id": "MED-006",
@@ -674,7 +710,8 @@
         "BYPASS_PROBE"
       ],
       "automation": "HYBRID",
-      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED"
+      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED",
+      "review_requirement": "ROLE_SEPARATED"
     },
     {
       "id": "REV-006",
@@ -693,7 +730,8 @@
         "REVOCATION_PROBE"
       ],
       "automation": "HYBRID",
-      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED"
+      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED",
+      "review_requirement": "ROLE_SEPARATED"
     },
     {
       "id": "OVR-006",
@@ -712,7 +750,8 @@
         "STATISTICAL_EVALUATION"
       ],
       "automation": "REVIEW_REQUIRED",
-      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED"
+      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED",
+      "review_requirement": "THIRD_PARTY"
     },
     {
       "id": "DEL-006",
@@ -731,7 +770,8 @@
         "FAULT_INJECTION"
       ],
       "automation": "HYBRID",
-      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED"
+      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED",
+      "review_requirement": "ROLE_SEPARATED"
     },
     {
       "id": "HUM-006",
@@ -750,14 +790,15 @@
         "RECOVERY_REVIEW"
       ],
       "automation": "REVIEW_REQUIRED",
-      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED"
+      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED",
+      "review_requirement": "ROLE_SEPARATED"
     },
     {
       "id": "ACC-006",
       "contract": "VII",
       "minimum_profile": 5,
       "title": "Require independent assurance and durable evidence escrow",
-      "requirement": "An A5 conclusion MUST be issued only after an independent assessment of the declared deployment and domain safety case. Evidence necessary to reproduce the assessment conclusion MUST remain verifiable from a fresh environment and MUST be retained or escrowed outside the assessed actor and ordinary mutable operator path according to the stated retention plan. The independent assessor MUST verify scope/configuration binding, evidence integrity, signer identity, required external checkpoints, and material limitations rather than relying on a self-declared profile field.",
+      "requirement": "An A5 conclusion MUST be issued only after an independent assessment of the declared deployment and domain safety case. The independent assessor MUST be a third party: a separate legal entity from the Assessment Subject, not controlled by the Assessment Subject with respect to the assessment outcome, and not compensated contingent on a passing outcome. Material conflicts of interest MUST be disclosed in the signed review record. Payment by the Assessment Subject does not by itself defeat independence. Evidence necessary to reproduce the assessment conclusion MUST remain verifiable from a fresh environment and MUST be retained or escrowed outside the assessed actor and ordinary mutable operator path according to the stated retention plan. The independent assessor MUST verify scope/configuration binding, evidence integrity, signer identity, required external checkpoints, and material limitations rather than relying on a self-declared profile field.",
       "setup": "A candidate A5 evidence package, fresh verification environment, independent assessor identity, and external evidence/checkpoint location.",
       "procedure": "Reconstruct the assessment from the retained package, verify signatures and digests, compare deployment/safety-case versions, remove or substitute evidence, and test stale configuration claims.",
       "expected": "The intact current package verifies and supports the reported findings; missing, substituted, stale, or unverifiable material prevents A5.",
@@ -769,7 +810,8 @@
         "EVIDENCE_REPLAY"
       ],
       "automation": "REVIEW_REQUIRED",
-      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED"
+      "implementation_status": "REFERENCE_PROBE_IMPLEMENTED",
+      "review_requirement": "THIRD_PARTY"
     }
   ]
 }

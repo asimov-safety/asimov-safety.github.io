@@ -103,14 +103,14 @@ cosign version</code></pre></div>
   --identity you@example.com</code></pre><p>When Cosign opens the authentication flow, sign in as that exact account. Asimov creates the Sigstore bundle and embeds the authenticated verification capsule back into <code>report.html</code>.</p></div></div>
     <div class="step"><div><h3>Publish the report</h3><p>That’s it. Publish or send <code>report.html</code>. A reader uploads that one file here and sees the report integrity, assessment binding, and—when the Sigstore verification succeeds—<strong>who signed it</strong>.</p><p>Other supported identity providers include GitHub, Microsoft, GitHub Actions, and custom OIDC issuers. The CLI will fail verification later if the identity used to sign does not match the identity you declared.</p></div></div>
   </div>
-  <p class="page-lede signing-note">A signature answers one question: <strong>Who signed this report?</strong> It does not answer whether the assessment was correct or whether the signer was independent.</p>
+  <p class="page-lede signing-note">The report signature answers one question: <strong>Who signed this report?</strong> Human-reviewed test families use separate reviewer attestations that answer <strong>who made that review judgment?</strong> Neither signature alone proves that the judgment was correct or that an undisclosed independence claim is true.</p>
 </div></section><section class="page-section" id="verify-package"><div class="shell">
   <details class="advanced-verification">
     <summary><span>Auditor / advanced verification</span><small>Full assessment, evidence manifest, evidence directory, statement, and optional Sigstore bundle</small></summary>
     <div class="verifier advanced-verifier">
       <div class="overline">Full package verification</div>
       <h2 class="section-title">Inspect the complete assessment package.</h2>
-      <p class="page-lede">This path is intended for assessors, auditors, maintainers, and reviewers with access to the complete package. Selected evidence files stay in the browser.</p>
+      <p class="page-lede">This path is intended for assessors, auditors, maintainers, and reviewers with access to the complete package. Selected evidence files stay in the browser. For the definitive cryptographic check of family-review attestations as well as the package signer, run <code>asimov verify-package</code> locally; no Asimov verification service is required.</p>
       <div class="verify-files">
         <div class="verify-field"><label>Assessment JSON</label><input id="assessment-file" type="file" accept=".json,application/json"></div>
         <div class="verify-field"><label>Evidence manifest JSON</label><input id="manifest-file" type="file" accept=".json,application/json"></div>
