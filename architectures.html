@@ -136,8 +136,16 @@
     ).join("");
   }
 
-  fetch(SOURCE, {cache:"no-store"})
-    .then(r => { if (!r.ok) throw new Error("catalog request failed"); return r.json(); })
+  function loadCatalog() {
+    return fetch(SOURCE, {cache:"no-store"})
+      .then(r => { if (!r.ok) throw new Error("live catalog request failed"); return r.json(); })
+      .catch(() => fetch("adapter-catalog.json", {cache:"no-store"}).then(r => {
+        if (!r.ok) throw new Error("fallback catalog request failed");
+        return r.json();
+      }));
+  }
+
+  loadCatalog()
     .then(data => {
       catalog = data;
       $("catalog-date").textContent = "Provider catalog checked " + (catalog.checked_at || "");
