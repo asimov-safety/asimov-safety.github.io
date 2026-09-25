@@ -178,3 +178,31 @@ footer{padding:55px 0 38px;background:var(--green);color:#e9eee9}
  .advanced-verification>summary{display:grid;grid-template-columns:1fr auto}
  .advanced-verification>summary small{grid-column:1;text-align:left}
 }
+
+/* Plain-language public verification */
+.plain-meaning{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 48px;margin-top:45px;border-top:1px solid var(--line)}
+.plain-meaning>div{display:grid;grid-template-columns:155px 1fr;gap:20px;padding:18px 0;border-bottom:1px solid var(--line-soft)}
+.plain-meaning strong{font-family:var(--serif);font-weight:400;color:var(--green)}
+.plain-meaning span{color:var(--muted);font-size:.9rem}
+.verification-explainer{margin-top:28px;padding:24px 26px;border-left:3px solid var(--green);background:rgba(255,255,255,.28)}
+.verification-explainer strong{font-family:var(--serif);font-size:1.35rem;font-weight:400}
+.verification-explainer p{margin:7px 0 0;color:var(--muted);max-width:900px}
+.verification-tech{margin-top:22px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.verification-tech summary{cursor:pointer;padding:16px 0;font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.tech-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 32px;padding-bottom:18px}
+.tech-grid>div{padding:11px 0;border-top:1px solid var(--line-soft);min-width:0}
+.tech-grid span{display:block;font-size:.63rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px}
+.tech-grid code{display:block;overflow-wrap:anywhere;font-size:.76rem}
+.install-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin:24px 0}
+.install-grid>div{border-top:1px solid var(--line);padding-top:14px;min-width:0}
+.install-grid strong{font-family:var(--serif);font-size:1.25rem;font-weight:400}
+.install-grid p{font-size:.9rem}
+.install-grid pre{margin-top:12px;padding:16px 18px}
+.signing-note{margin-top:34px}
+@media(max-width:850px){
+ .plain-meaning,.tech-grid,.install-grid{grid-template-columns:1fr}
+ .plain-meaning>div{grid-template-columns:140px 1fr}
+}
+@media(max-width:560px){
+ .plain-meaning>div{grid-template-columns:1fr;gap:5px}
+}
