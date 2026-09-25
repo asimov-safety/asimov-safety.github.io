@@ -155,7 +155,7 @@ footer{padding:55px 0 38px;background:var(--green);color:#e9eee9}
 
 /* Public-first verification */
 .public-verifier{padding-top:18px}
-.public-files{grid-template-columns:1fr 1fr;max-width:900px}
+.public-files{grid-template-columns:minmax(0,680px);max-width:680px}
 .public-binding{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 38px;border-top:1px solid var(--line);margin-top:4px}
 .public-binding>div{padding:15px 0;border-bottom:1px solid var(--line-soft);min-width:0}
 .public-binding span{display:block;font-size:.63rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:4px}
