@@ -30,6 +30,27 @@ h1,h2,h3,p{margin-top:0}
 .home-title em{font-weight:400;color:var(--green);font-style:italic}
 .hero-thesis{font-family:var(--serif);font-size:1.63rem;line-height:1.25;color:var(--green);margin:0 0 28px}
 .hero-note{color:var(--muted);font-size:.95rem;max-width:280px}
+.clarity-hero{grid-template-columns:minmax(0,1fr) minmax(340px,420px);align-items:center;padding:86px 0 78px}
+.clarity-title{font-size:clamp(4.5rem,8.7vw,8.4rem);line-height:.85;max-width:850px}
+.hero-explainer .hero-thesis{font-size:1.55rem;margin-bottom:18px}
+.hero-explainer .hero-note{max-width:410px;font-size:1rem;line-height:1.55;margin-bottom:16px}
+.hero-plain{color:var(--muted);font-size:.84rem;line-height:1.55;max-width:410px;margin-bottom:0}
+.hero-plain strong{color:var(--ink);font-weight:700}
+.hero-actions{display:flex;flex-wrap:wrap;gap:0 26px;align-items:center}
+.hero-actions .editorial-link{margin-top:20px}
+.use-cases{padding:78px 0 84px;border-bottom:1px solid var(--line)}
+.use-case-header{display:grid;grid-template-columns:1.1fr .9fr;gap:80px;align-items:end;margin-bottom:48px}
+.use-case-header .section-title{margin-bottom:0}
+.use-case-lede{font-family:var(--serif);font-size:1.35rem;line-height:1.35;color:var(--green);margin:0 0 5px;max-width:520px}
+.use-case-grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.use-case-card{padding:30px 28px 32px;border-right:1px solid var(--line)}
+.use-case-card:first-child{padding-left:0}.use-case-card:last-child{border-right:0;padding-right:0}
+.use-case-num{font-family:var(--serif);font-style:italic;font-size:1.35rem;color:var(--brass);margin-bottom:18px}
+.use-case-card h3{font-family:var(--serif);font-size:1.8rem;font-weight:400;line-height:1.1;margin:0 0 12px}
+.use-case-card p{color:var(--muted);font-size:.92rem;margin:0;max-width:340px}
+.constants-home-head{padding:82px 0 56px;max-width:900px}
+.constants-home-head .section-title{margin-bottom:20px}
+.constants-home-head .overline{margin-bottom:18px}
 .editorial-link{display:inline-flex;align-items:center;gap:12px;margin-top:24px;padding-bottom:5px;border-bottom:1px solid var(--ink);font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.11em}
 .editorial-link span{transition:transform .18s ease}.editorial-link:hover span{transform:translateX(4px)}
 .intro-band{background:var(--green);color:var(--cream);padding:58px 0}
@@ -108,6 +129,8 @@ footer{padding:55px 0 38px;background:var(--green);color:#e9eee9}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}.constant-num,.constant-row::before,.nav{transition:none}}
 @media(max-width:900px){
  .shell{width:min(var(--max),calc(100% - 36px))}
+ .clarity-hero{grid-template-columns:1fr;gap:42px;padding:68px 0 60px}.hero-explainer .hero-note,.hero-plain{max-width:620px}
+ .use-case-header{grid-template-columns:1fr;gap:20px}.use-case-grid{grid-template-columns:1fr}.use-case-card{border-right:0;border-bottom:1px solid var(--line);padding:26px 0}.use-case-card:last-child{border-bottom:0}
  .nav{height:auto;padding:15px 0;align-items:flex-start;flex-direction:column;gap:8px}.navlinks{width:100%;overflow:auto;gap:20px;padding-bottom:3px}.navlinks .github{display:none}
  .hero-grid{grid-template-columns:1fr;gap:45px;padding:75px 0 65px}.hero-note{max-width:520px}
  .intro-band .shell{grid-template-columns:1fr;gap:25px}
@@ -118,6 +141,7 @@ footer{padding:55px 0 38px;background:var(--green);color:#e9eee9}
  .verify-row{grid-template-columns:70px 1fr}.verify-row p{grid-column:2}.status-line{grid-template-columns:70px 1fr}.status-line span{grid-column:2}
 }
 @media(max-width:600px){
+ .clarity-title{font-size:4rem}.use-cases{padding:58px 0 64px}.constants-home-head{padding:62px 0 42px}
  .home-title{font-size:4.5rem}.constant-name{font-size:2.5rem}.constant-num{font-size:4rem}.page-title{font-size:4.2rem}
  .constant-detail{grid-template-columns:60px 1fr;gap:20px}.detail-num{font-size:3rem}.detail-name{font-size:2.3rem}
  .step{grid-template-columns:50px 1fr;gap:20px}.footer-copy{font-size:1.25rem}
