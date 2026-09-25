@@ -18,6 +18,9 @@ document.addEventListener("DOMContentLoaded",()=> {
   }
   async function digestFile(file){ return hexDigestBytes(await file.arrayBuffer()); }
   async function digestText(text){ return hexDigestBytes(enc.encode(text)); }
+  function normalizeReportText(text){
+    return String(text).replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+  }
   function stripPublicCapsule(text){
     const start="<!-- ASIMOV-PUBLIC-VERIFICATION-START -->";
     const end="<!-- ASIMOV-PUBLIC-VERIFICATION-END -->";
@@ -28,7 +31,7 @@ document.addEventListener("DOMContentLoaded",()=> {
   async function digestReportFile(file){
     if(!file) return null;
     if((file.name||"").toLowerCase().endsWith(".html") || file.type==="text/html"){
-      return digestText(stripPublicCapsule(await file.text()));
+      return digestText(stripPublicCapsule(normalizeReportText(await file.text())));
     }
     return digestFile(file);
   }
@@ -65,7 +68,7 @@ document.addEventListener("DOMContentLoaded",()=> {
       if(record.version!=="asimov-public-verification/0.2.0") throw new Error("Unsupported public verification record version.");
       if(!record.report || !record.statement || typeof record.statement.text!=="string") throw new Error("Embedded public verification record is incomplete.");
 
-      const unsignedReport=stripPublicCapsule(reportText);
+      const unsignedReport=stripPublicCapsule(normalizeReportText(reportText));
       const reportDigest=await digestText(unsignedReport);
       const statementDigest=await digestText(record.statement.text);
       let statement;
