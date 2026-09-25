@@ -206,3 +206,17 @@ footer{padding:55px 0 38px;background:var(--green);color:#e9eee9}
 @media(max-width:560px){
  .plain-meaning>div{grid-template-columns:1fr;gap:5px}
 }
+
+/* Local signer verification help */
+.local-verify-help{margin-top:42px;padding:34px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.local-verify-help h3{font-family:var(--serif);font-size:2.15rem;font-weight:400;margin-bottom:10px}
+.local-verify-help>p{max-width:900px;color:var(--muted)}
+.local-verify-steps{margin-top:28px;border-top:1px solid var(--line-soft)}
+.local-verify-steps>div{padding:24px 0;border-bottom:1px solid var(--line-soft)}
+.local-verify-steps>div>strong{font-family:var(--serif);font-size:1.3rem;font-weight:400}
+.local-verify-steps>div>p{color:var(--muted);max-width:900px;margin:8px 0 0}
+.platform-install{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px}
+.platform-install>div{min-width:0}
+.platform-install span{display:block;font-size:.66rem;text-transform:uppercase;letter-spacing:.11em;color:var(--muted);margin-bottom:8px}
+.platform-install pre{margin-top:0}
+@media(max-width:760px){.platform-install{grid-template-columns:1fr}}

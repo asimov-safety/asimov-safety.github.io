@@ -133,8 +133,8 @@ document.addEventListener("DOMContentLoaded",()=> {
             provenanceDetail="The signature checker could not be reached. The signature has not been independently verified.";
           }
         }else{
-          provenanceState="SIGNATURE FOUND";
-          provenanceDetail="This report contains a signature for "+identity+", but this website has not independently checked that signature. Use the local verification command below to confirm it.";
+          provenanceState="CONFIRM SIGNER";
+          provenanceDetail="Signature attached for "+identity+". To confirm that this account signed this exact assessment record, run the independent signer check on your computer: asimov verify-report "+reportFile.name+". Installation steps are directly below.";
           publicCmd.textContent="asimov verify-report "+shellQuote(reportFile.name);
         }
       }
