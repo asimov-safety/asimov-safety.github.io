@@ -34,7 +34,38 @@
   </div>
   <div class="verify-actions"><button class="editorial-button" id="verify-public" type="button">Verify report</button></div>
   <div id="public-verify-results"></div>
-  <div class="command-box public-command"><code id="public-command">If this report contains a Sigstore signature but the site cannot verify it online, use: asimov verify-report report.html</code></div>
+  <div class="command-box public-command"><code id="public-command">For a signed report, the definitive signer check is: asimov verify-report report.html</code></div>
+
+  <section class="local-verify-help" id="verify-locally">
+    <div class="overline">Confirm the signature yourself</div>
+    <h3>Run the signer check on your own computer.</h3>
+    <p><code>asimov verify-report</code> is the independent signature check. It reads the signature already embedded in the HTML report, asks the official Cosign verifier to validate it, and tells you whether the named signing account really signed that exact assessment record. Your report is checked locally; it is not uploaded anywhere.</p>
+
+    <div class="local-verify-steps">
+      <div>
+        <strong>1 · Install Asimov</strong>
+        <p>Requires Python 3.10 or newer.</p>
+        <div class="platform-install">
+          <div><span>macOS / Linux</span><pre><code>python3 -m pip install "https://github.com/asimov-safety/asimov/archive/refs/heads/main.zip"
+asimov --help</code></pre></div>
+          <div><span>Windows PowerShell</span><pre><code>py -m pip install "https://github.com/asimov-safety/asimov/archive/refs/heads/main.zip"
+asimov --help</code></pre></div>
+        </div>
+      </div>
+
+      <div>
+        <strong>2 · Install Cosign</strong>
+        <p>Cosign is the official Sigstore command-line verifier that performs the cryptographic signature check. Use the platform instructions in the <a href="#sign-report">Cosign installation section below</a>, or the <a href="https://docs.sigstore.dev/cosign/system_config/installation/">official Sigstore installation guide ↗</a>.</p>
+      </div>
+
+      <div>
+        <strong>3 · Verify the report</strong>
+        <p>Save the HTML report anywhere on your computer, open Terminal / PowerShell in that folder, and run:</p>
+        <pre><code>asimov verify-report report.html</code></pre>
+        <p>A successful signed-report check reports that the report content is unchanged and identifies the verified signing account. If the signature does not match the embedded signing identity, verification fails.</p>
+      </div>
+    </div>
+  </section>
 
   <div class="plain-meaning">
     <div><strong>Report unchanged?</strong><span>We compare the report with the fingerprint recorded when it was issued.</span></div>
