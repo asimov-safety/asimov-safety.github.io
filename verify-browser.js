@@ -70,6 +70,7 @@ document.addEventListener("DOMContentLoaded",()=> {
           <div><span>Requested profile</span><strong>${esc(p.requestedProfile||"—")}</strong></div>
           <div><span>Reported outcome</span><strong>${esc(p.reportedOutcome||"—")}</strong></div>
           <div><span>Assessment mode</span><strong>${esc(p.assessmentMode||"—")}</strong></div>
+          <div><span>Assessor</span><strong>${esc(p.assessor||"—")}</strong></div>
           <div><span>Assessment created</span><strong>${esc(p.assessmentCreatedAt||"—")}</strong></div>
           <div><span>Configuration</span><strong title="${esc(sys.configurationSha256||"")}">${esc(shortHash(sys.configurationSha256))}</strong></div>
           <div><span>Scope binding</span><strong title="${esc(p.scopeManifestSha256||"")}">${esc(shortHash(p.scopeManifestSha256))}</strong></div>
@@ -199,6 +200,7 @@ document.addEventListener("DOMContentLoaded",()=> {
       check(p.scopeManifestSha256===assessment.scope_manifest_sha256,"scope manifest SHA-256");
       check(p.requestedProfile===assessment.requested_profile,"requested profile");
       check(p.assessmentMode===(assessment.assessment&&assessment.assessment.mode),"assessment mode");
+      check(p.assessor===(assessment.assessment&&assessment.assessment.assessor),"assessor");
       check(p.evidenceManifestSha256===manifest.manifest_sha256,"evidence manifest SHA-256");
       const predicateOk=predicateErrors.length===0;
       html+=row("Scope & configuration",predicateOk?"VERIFIED":"FAILED",predicateOk?"Statement predicate matches the assessment scope and configuration.":esc("Mismatched: "+predicateErrors.join(", ")));
