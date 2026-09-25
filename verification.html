@@ -46,7 +46,7 @@
 
 <section class="page-section"><div class="shell verify-list">
   <div class="verify-row"><div class="num">01</div><h3>Exact artifact</h3><p>Changing even one byte of the public report changes its SHA-256 digest and breaks the report-to-statement match.</p></div>
-  <div class="verify-row"><div class="num">02</div><h3>Authenticated signer</h3><p>When Sigstore verifies, the exact statement was signed by the OIDC-backed identity shown in the verification result rather than merely carrying an editable name field. Signer authentication does not by itself establish that the signer was an authorized or independent assessor.</p></div>
+  <div class="verify-row"><div class="num">02</div><h3>Who signed this?</h3><p>When Sigstore verifies, Asimov shows the authenticated identity that signed the exact report statement and the identity provider used to authenticate them. This answers who committed to the report; it does not by itself prove that the signer was an authorized or independent assessor.</p></div>
   <div class="verify-row"><div class="num">03</div><h3>External checkpoint</h3><p>Sigstore's transparency infrastructure provides an external, append-only checkpoint so the signer cannot silently rewrite the historical commitment later.</p></div>
   <div class="verify-row"><div class="num">04</div><h3>Semantic limits</h3><p>A valid signature proves provenance and binding—not that every finding is correct. Required human and independent review remains part of the assessment result itself.</p></div>
 </div></section>
