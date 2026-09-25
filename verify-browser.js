@@ -79,23 +79,30 @@ document.addEventListener("DOMContentLoaded",()=> {
       expectedSubjects.set("asimov-evidence-manifest",await digestFile(manifestFile));
       if(reportFile) expectedSubjects.set("report/"+reportFile.name,await digestFile(reportFile));
       const actualSubjects=new Map((statement.subject||[]).map(x=>[x.name,x.digest&&x.digest.sha256]));
-      let subjectOk=expectedSubjects.size===actualSubjects.size;
-      if(subjectOk) for(const [k,v] of expectedSubjects) if(actualSubjects.get(k)!==v) subjectOk=false;
-      html+=row("Artifact binding",subjectOk?"VERIFIED":"FAILED",subjectOk?"Assessment, manifest"+(reportFile?", and report":"")+" hashes match the signed-subject statement.":"Statement subject digests do not match the selected artifacts.");
+      const subjectErrors=[];
+      for(const [name,digest] of expectedSubjects){
+        if(!actualSubjects.has(name)) subjectErrors.push("missing subject "+name);
+        else if(actualSubjects.get(name)!==digest) subjectErrors.push("digest mismatch "+name);
+      }
+      for(const name of actualSubjects.keys()) if(!expectedSubjects.has(name)) subjectErrors.push("unexpected subject "+name);
+      const subjectOk=subjectErrors.length===0;
+      html+=row("Artifact binding",subjectOk?"VERIFIED":"FAILED",subjectOk?"Assessment, manifest"+(reportFile?", and report":"")+" hashes match the signed-subject statement.":esc(subjectErrors.join("; ")));
 
       const p=statement.predicate||{};
-      const predicateOk=
-        statement._type==="https://in-toto.io/Statement/v1" &&
-        statement.predicateType==="https://asimov-safety.github.io/asimov/attestation/v0.2" &&
-        p.specVersion===assessment.spec_version &&
-        p.reportId===assessment.report_id &&
-        p.system && p.system.id===assessment.system.id &&
-        p.system.configurationSha256===assessment.system.configuration_sha256 &&
-        p.scopeManifestSha256===assessment.scope_manifest_sha256 &&
-        p.requestedProfile===assessment.requested_profile &&
-        p.assessmentMode===assessment.assessment.mode &&
-        p.evidenceManifestSha256===manifest.manifest_sha256;
-      html+=row("Scope & configuration",predicateOk?"VERIFIED":"FAILED",predicateOk?"Statement predicate matches the assessment scope and configuration.":"Statement predicate does not match the assessment.");
+      const predicateErrors=[];
+      const check=(ok,label)=>{if(!ok) predicateErrors.push(label)};
+      check(statement._type==="https://in-toto.io/Statement/v1","statement type");
+      check(statement.predicateType==="https://asimov-safety.github.io/asimov/attestation/v0.2","predicate type");
+      check(p.specVersion===assessment.spec_version,"spec version");
+      check(p.reportId===assessment.report_id,"report ID");
+      check(p.system && p.system.id===assessment.system.id,"system ID");
+      check(p.system && p.system.configurationSha256===assessment.system.configuration_sha256,"configuration SHA-256");
+      check(p.scopeManifestSha256===assessment.scope_manifest_sha256,"scope manifest SHA-256");
+      check(p.requestedProfile===assessment.requested_profile,"requested profile");
+      check(p.assessmentMode===(assessment.assessment&&assessment.assessment.mode),"assessment mode");
+      check(p.evidenceManifestSha256===manifest.manifest_sha256,"evidence manifest SHA-256");
+      const predicateOk=predicateErrors.length===0;
+      html+=row("Scope & configuration",predicateOk?"VERIFIED":"FAILED",predicateOk?"Statement predicate matches the assessment scope and configuration.":esc("Mismatched: "+predicateErrors.join(", ")));
 
       const endpoint=document.body.dataset.sigstoreEndpoint||"";
       if(bundleFile && identity && issuer && endpoint){
