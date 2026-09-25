@@ -20,18 +20,17 @@
 <header class="page-hero"><div class="shell">
   <div class="overline">Public verification</div>
   <h1 class="page-title">Verify the report<br><em>people actually share.</em></h1>
-  <p class="page-lede">For ordinary public or media use, you need only two files: the Asimov report and its public verification record. The browser checks whether the report is the exact artifact bound by the issued statement and shows whether signer provenance has been authenticated.</p>
+  <p class="page-lede">For ordinary public or media use, you need only the Asimov HTML report. Its embedded verification capsule binds the visible report to the issued assessment and can also carry authenticated Sigstore provenance.</p>
   <a class="editorial-link" href="#verify-report">Verify a report <span>↓</span></a>
 </div></header>
 
 <section class="page-section" id="verify-report"><div class="shell verifier public-verifier">
-  <div class="overline">Two-file public check</div>
-  <h2 class="section-title">Report + verification record.</h2>
-  <p class="page-lede">Nothing here requires the private evidence directory. The public record contains the exact verification statement and, when published, the Sigstore material needed to authenticate its signer.</p>
+  <div class="overline">One-file public check</div>
+  <h2 class="section-title">Upload the report.</h2>
+  <p class="page-lede">Nothing here requires the private evidence directory. The report contains a non-visible verification capsule with the exact issued statement and, when published, the Sigstore material needed to authenticate its signer.</p>
 
   <div class="verify-files public-files">
-    <div class="verify-field"><label>Asimov report</label><input id="public-report-file" type="file" accept=".html,text/html,.pdf,application/pdf"></div>
-    <div class="verify-field"><label>Public verification record</label><input id="public-record-file" type="file" accept=".json,application/json"></div>
+    <div class="verify-field"><label>Asimov HTML report</label><input id="public-report-file" type="file" accept=".html,text/html"></div>
   </div>
   <div class="verify-actions"><button class="editorial-button" id="verify-public" type="button">Verify report</button></div>
   <div id="public-verify-results"></div>
