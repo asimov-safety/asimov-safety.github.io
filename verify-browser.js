@@ -18,6 +18,20 @@ document.addEventListener("DOMContentLoaded",()=> {
   }
   async function digestFile(file){ return hexDigestBytes(await file.arrayBuffer()); }
   async function digestText(text){ return hexDigestBytes(enc.encode(text)); }
+  function stripPublicCapsule(text){
+    const start="<!-- ASIMOV-PUBLIC-VERIFICATION-START -->";
+    const end="<!-- ASIMOV-PUBLIC-VERIFICATION-END -->";
+    const a=text.indexOf(start), b=text.indexOf(end);
+    if(a<0 || b<a) return text;
+    return text.slice(0,a)+text.slice(b+end.length);
+  }
+  async function digestReportFile(file){
+    if(!file) return null;
+    if((file.name||"").toLowerCase().endsWith(".html") || file.type==="text/html"){
+      return digestText(stripPublicCapsule(await file.text()));
+    }
+    return digestFile(file);
+  }
   async function readJson(file,label){
     if(!file) throw new Error(label+" is required.");
     try{return JSON.parse(await file.text())}catch(e){throw new Error(label+" is not valid JSON.")}
@@ -51,7 +65,7 @@ document.addEventListener("DOMContentLoaded",()=> {
       if(record.version!=="asimov-public-verification/0.2.0") throw new Error("Unsupported public verification record version.");
       if(!record.report || !record.statement || typeof record.statement.text!=="string") throw new Error("Embedded public verification record is incomplete.");
 
-      const unsignedReport=reportText.slice(0,startIndex)+reportText.slice(endIndex+capsuleEnd.length);
+      const unsignedReport=stripPublicCapsule(reportText);
       const reportDigest=await digestText(unsignedReport);
       const statementDigest=await digestText(record.statement.text);
       let statement;
@@ -189,7 +203,7 @@ document.addEventListener("DOMContentLoaded",()=> {
       const expectedSubjects=new Map();
       expectedSubjects.set("asimov-assessment",await digestFile(assessmentFile));
       expectedSubjects.set("asimov-evidence-manifest",await digestFile(manifestFile));
-      if(reportFile) expectedSubjects.set("report/"+reportFile.name,await digestFile(reportFile));
+      if(reportFile) expectedSubjects.set("report/"+reportFile.name,await digestReportFile(reportFile));
       const actualSubjects=new Map((statement.subject||[]).map(x=>[x.name,x.digest&&x.digest.sha256]));
       const subjectErrors=[];
       for(const [name,digest] of expectedSubjects){
