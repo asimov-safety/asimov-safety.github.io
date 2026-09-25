@@ -20,14 +20,14 @@
 <header class="page-hero"><div class="shell">
   <div class="overline">Public verification</div>
   <h1 class="page-title">Verify the report<br><em>people actually share.</em></h1>
-  <p class="page-lede">For ordinary public or media use, you need only the Asimov HTML report. Its embedded verification capsule binds the visible report to the issued assessment and can also carry authenticated Sigstore provenance.</p>
+  <p class="page-lede">Upload an Asimov report and get plain answers: Has it been changed? Who signed it? Which assessment does it belong to? The technical cryptography stays out of the way unless you want to inspect it.</p>
   <a class="editorial-link" href="#verify-report">Verify a report <span>↓</span></a>
 </div></header>
 
 <section class="page-section" id="verify-report"><div class="shell verifier public-verifier">
   <div class="overline">One-file public check</div>
   <h2 class="section-title">Upload the report.</h2>
-  <p class="page-lede">Nothing here requires the private evidence directory. The report contains a non-visible verification capsule with the exact issued statement and, when published, the Sigstore material needed to authenticate its signer.</p>
+  <p class="page-lede">You only need the HTML report. Nothing from the private evidence package is uploaded.</p>
 
   <div class="verify-files public-files">
     <div class="verify-field"><label>Asimov HTML report</label><input id="public-report-file" type="file" accept=".html,text/html"></div>
@@ -36,19 +36,19 @@
   <div id="public-verify-results"></div>
   <div class="command-box public-command"><code id="public-command">If this report contains a Sigstore signature but the site cannot verify it online, use: asimov verify-report report.html</code></div>
 
-  <div class="public-meaning">
-    <div><strong>Integrity</strong><span>Does this exact report match the digest in the issued statement?</span></div>
-    <div><strong>Provenance</strong><span>Was that exact statement signed by the expected authenticated identity and externally checkpointed?</span></div>
-    <div><strong>Binding</strong><span>Which assessment ID, system/configuration, requested profile, and reported outcome are bound to the report?</span></div>
-    <div><strong>Not implied</strong><span>Cryptography does not decide whether the assessor's evidence or judgment was substantively correct.</span></div>
+  <div class="plain-meaning">
+    <div><strong>Report unchanged?</strong><span>We compare the report with the fingerprint recorded when it was issued.</span></div>
+    <div><strong>Who signed this?</strong><span>If a digital signature is attached and independently verified, we show the verified signer.</span></div>
+    <div><strong>What report is this?</strong><span>We show the system tested, assessor, requested assurance level, result, and assessment date.</span></div>
+    <div><strong>What this does NOT prove</strong><span>A valid signature does not prove the assessment was correct or that the system is safe. It proves which report was signed, and by whom when signer verification succeeds.</span></div>
   </div>
 </div></section>
 
 <section class="page-section"><div class="shell verify-list">
-  <div class="verify-row"><div class="num">01</div><h3>Exact report content</h3><p>Changing the substantive report HTML changes its SHA-256 digest and breaks the report-to-statement match. The embedded verification capsule is intentionally excluded from that content digest so it can carry the statement and signature without creating a cryptographic self-reference.</p></div>
-  <div class="verify-row"><div class="num">02</div><h3>Who signed this?</h3><p>When Sigstore verifies, Asimov shows the authenticated identity that signed the exact report statement and the identity provider used to authenticate them. This answers who committed to the report; it does not by itself prove that the signer was an authorized or independent assessor.</p></div>
-  <div class="verify-row"><div class="num">03</div><h3>External checkpoint</h3><p>Sigstore's transparency infrastructure provides an external, append-only checkpoint so the signer cannot silently rewrite the historical commitment later.</p></div>
-  <div class="verify-row"><div class="num">04</div><h3>Semantic limits</h3><p>A valid signature proves provenance and binding—not that every finding is correct. Required human and independent review remains part of the assessment result itself.</p></div>
+  <div class="verify-row"><div class="num">01</div><h3>Has the report changed?</h3><p>Asimov records a digital fingerprint when the report is issued. If someone later edits the findings, result, assessor, or other report content, that fingerprint no longer matches.</p></div>
+  <div class="verify-row"><div class="num">02</div><h3>Who signed it?</h3><p>A signed report can include proof that a specific account signed the assessment record. When that signature is independently checked, Asimov can show the verified signer instead of trusting a name typed into the report.</p></div>
+  <div class="verify-row"><div class="num">03</div><h3>Can the signing record be rewritten later?</h3><p>Sigstore includes public, time-stamped signing information so the signer cannot quietly replace the old signing record with a different one later.</p></div>
+  <div class="verify-row"><div class="num">04</div><h3>Does “verified” mean “safe”?</h3><p>No. Verification tells you whether this is the original report and, when the signature is checked, who signed it. The report itself still tells you what passed, failed, was not tested, or required human judgment.</p></div>
 </div></section>
 
 <section class="page-section" id="sign-report"><div class="shell">
@@ -56,15 +56,23 @@
   <h2 class="section-title">Sign it in one command.</h2>
   <p class="page-lede">Signing is what lets a public reader answer the plain-language question <strong>“Who signed this?”</strong> rather than merely checking that the report and its embedded record agree.</p>
   <div class="steps signing-steps">
-    <div class="step"><div><h3>Install Cosign once</h3><p>Asimov uses Sigstore’s Cosign client instead of inventing a signing system. On macOS with Homebrew:</p><pre><code>brew install cosign
-cosign version</code></pre><p>Other platforms: use Sigstore’s official Cosign installation instructions.</p></div></div>
+    <div class="step"><div><h3>Install Cosign once</h3><p>Asimov uses Sigstore’s Cosign tool to create and check signatures. Choose your platform:</p>
+<div class="install-grid">
+  <div><strong>macOS</strong><pre><code>brew install cosign
+cosign version</code></pre></div>
+  <div><strong>Windows</strong><p>Download the latest <code>cosign-windows-amd64.exe</code> (or the build for your architecture) from the official Cosign releases page, rename it to <code>cosign.exe</code>, and place it in a folder on your PATH.</p><pre><code>cosign version</code></pre></div>
+  <div><strong>Linux</strong><p>Homebrew/Linuxbrew works, or install the official binary/package for your distribution and architecture. For Linuxbrew:</p><pre><code>brew install cosign
+cosign version</code></pre></div>
+</div>
+<p>If Go 1.20+ is already installed, this works on macOS, Windows, or Linux:</p><pre><code>go install github.com/sigstore/cosign/v3/cmd/cosign@latest</code></pre>
+<p><a class="editorial-link" href="https://docs.sigstore.dev/cosign/system_config/installation/">Official Cosign installation guide <span>↗</span></a> <a class="editorial-link" href="https://github.com/sigstore/cosign/releases">Cosign releases <span>↗</span></a></p></div></div>
     <div class="step"><div><h3>Sign the finalized report</h3><p>The simplest human flow is to use the same Google account/email you want readers to see as the authenticated signer:</p><pre><code>asimov sign-report report.html \
   --statement asimov-statement.json \
   --provider google \
   --identity you@example.com</code></pre><p>When Cosign opens the authentication flow, sign in as that exact account. Asimov creates the Sigstore bundle and embeds the authenticated verification capsule back into <code>report.html</code>.</p></div></div>
     <div class="step"><div><h3>Publish the report</h3><p>That’s it. Publish or send <code>report.html</code>. A reader uploads that one file here and sees the report integrity, assessment binding, and—when the Sigstore verification succeeds—<strong>who signed it</strong>.</p><p>Other supported identity providers include GitHub, Microsoft, GitHub Actions, and custom OIDC issuers. The CLI will fail verification later if the identity used to sign does not match the identity you declared.</p></div></div>
   </div>
-  <p class="page-lede signing-note">Signing authenticates the signer who committed to the report. It does not by itself prove that the signer was an independent assessor, nor that the assessment judgment was correct.</p>
+  <p class="page-lede signing-note">A signature answers one question: <strong>Who signed this report?</strong> It does not answer whether the assessment was correct or whether the signer was independent.</p>
 </div></section><section class="page-section" id="verify-package"><div class="shell">
   <details class="advanced-verification">
     <summary><span>Auditor / advanced verification</span><small>Full assessment, evidence manifest, evidence directory, statement, and optional Sigstore bundle</small></summary>
