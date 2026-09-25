@@ -14,7 +14,9 @@ asimov reference-mutations</code></pre></div></div><div class="step"><div><h3>Ma
   --level A5 \
   --assessor "Your Name or Assessment Team" \
   --mode self_assessment \
-  --output ./assessment</code></pre><p>Read <code>REVIEW-CHECKLIST.md</code> and <code>verification-plan.json</code>. Assign reviewers and acknowledge every required obligation. Acknowledgement is not a PASS.</p></div></div>
+  --output ./assessment</code></pre><p>Read <code>REVIEW-CHECKLIST.md</code>, <code>verification-plan.json</code>, and <code>scope.json</code>, then acknowledge the obligations in one command. Acknowledgement is not a PASS and does not pretend that an independent A5 review already happened.</p><pre><code>asimov acknowledge-assessment ./assessment \
+  --reviewer "Your Name" \
+  --reviewer-role "System owner / self-assessor"</code></pre></div></div>
   <div class="step"><div><h3>2 · Execute</h3><p>The technical suite refuses to start if required pre-run human/review obligations have not been acknowledged.</p><pre><code>asimov run-assessment ./assessment \
   --adapter ./my_adapter.py:MyAdapter \
   --adapter-kwargs '{}'</code></pre></div></div>
