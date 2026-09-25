@@ -1,0 +1,589 @@
+{
+  "schema_version": "1.0",
+  "checked_at": "2026-09-25",
+  "principle": "Framework hooks show what the agent attempted. Authority, resource, lifecycle, supervision, and evidence surfaces establish whether control actually held.",
+  "surfaces": [
+    {
+      "id": "action",
+      "name": "Action driver",
+      "question": "How does Asimov exercise the real agent or tool path?",
+      "warning": "Do not substitute a synthetic test-only path for the production route you are claiming."
+    },
+    {
+      "id": "authority",
+      "name": "Authority controller",
+      "question": "What real mechanism grants, bounds, expires, and revokes consequential authority?",
+      "warning": "Prompts, role descriptions, and framework-level allowlists are not automatically enforceable authority boundaries."
+    },
+    {
+      "id": "resource",
+      "name": "Resource truth",
+      "question": "What authoritative source tells Asimov what actually happened?",
+      "warning": "Agent text, framework traces, and orchestration state are not proof of an external effect."
+    },
+    {
+      "id": "lifecycle",
+      "name": "Lifecycle",
+      "question": "What can safely restart, partition, stop, or fault the deployed system?",
+      "warning": "A UI pause or cooperative agent stop is not the same as infrastructure-level lifecycle control."
+    },
+    {
+      "id": "supervision",
+      "name": "Supervision",
+      "question": "What authenticated intervention path remains outside the actor's effective authority?",
+      "warning": "A supervisor running with the same unrestricted privileges as the actor is not independent."
+    },
+    {
+      "id": "evidence",
+      "name": "Evidence",
+      "question": "What records can reconstruct requests, decisions, effects, failures, and control changes?",
+      "warning": "Preserve disagreements between orchestration logs and resource-side evidence rather than hiding them."
+    }
+  ],
+  "runtime_options": [
+    {
+      "id": "openai-agents-api",
+      "name": "OpenAI Agents API",
+      "vendor": "OpenAI",
+      "ownership": "managed",
+      "status": "current",
+      "summary": "OpenAI runs the managed agent harness and durable session/orchestration layer; your application still owns surrounding integrations and chooses where tool execution occurs.",
+      "action_driver": "Agents API session/task/event flow",
+      "useful_hooks": [
+        "session events",
+        "tool/custom-tool events",
+        "sandbox or environment events",
+        "application-side integration logs"
+      ],
+      "not_enough": [
+        "Agents API event history alone does not prove the destination resource changed.",
+        "Provider-hosted execution must be treated as a real action path, not hidden behind one application callback."
+      ],
+      "recommended": {
+        "action": "Create and steer real Agents API sessions through the same application route used in production.",
+        "authority": "Bind consequential tools to external IAM, a policy gateway, or resource-side authorization; keep application/API credentials outside agent-controlled sandboxes.",
+        "resource": "Read the protected database/API/cloud resource independently.",
+        "lifecycle": "Use the selected environment/sandbox controls plus the application's hosting control plane.",
+        "supervision": "Keep A3+ intervention in an external operator/policy/infrastructure path.",
+        "evidence": "Combine Agents API events with application integration logs and resource/provider audit."
+      },
+      "docs_url": "https://developers.openai.com/api/docs/guides/agents",
+      "note": "OpenAI recommends the Agents API for new agent applications as of this catalog check."
+    },
+    {
+      "id": "openai-agents-sdk",
+      "name": "OpenAI Agents SDK",
+      "vendor": "OpenAI",
+      "ownership": "application",
+      "status": "maintenance",
+      "summary": "The agent loop runs in your application; your server owns deployment, tool implementations, storage, and approval decisions.",
+      "action_driver": "Agents SDK runner / application entry point",
+      "useful_hooks": [
+        "runner events",
+        "tool calls",
+        "handoffs",
+        "sessions",
+        "tracing",
+        "human approval pauses"
+      ],
+      "not_enough": [
+        "SDK traces do not prove the external effect.",
+        "A tool guardrail or application callback is not automatically an authority boundary if the actor can bypass it through another route."
+      ],
+      "recommended": {
+        "action": "Run the same SDK Runner/tool path used by production.",
+        "authority": "Place real authorization outside model-written instructions and preferably outside the agent process for higher profiles.",
+        "resource": "Use the target DB/API/filesystem/cloud service as the oracle.",
+        "lifecycle": "Use the application's process/container/orchestrator controls.",
+        "supervision": "Use a separate supervisor or policy/infrastructure service for A3+.",
+        "evidence": "Pair SDK tracing with resource-side and authority-side evidence."
+      },
+      "docs_url": "https://developers.openai.com/api/docs/guides/agents/sdk",
+      "note": "The Agents SDK is feature-complete and maintained; OpenAI recommends Agents API for new applications."
+    },
+    {
+      "id": "openai-responses-custom",
+      "name": "OpenAI Responses API / custom loop",
+      "vendor": "OpenAI",
+      "ownership": "application",
+      "status": "current",
+      "summary": "You own the application logic and any agent loop around Responses while OpenAI provides model responses and configured hosted capabilities.",
+      "action_driver": "Your application loop around Responses",
+      "useful_hooks": [
+        "function/tool calls",
+        "response items",
+        "conversation state",
+        "application middleware"
+      ],
+      "not_enough": [
+        "Model/tool-call output is not evidence that an external action succeeded.",
+        "Hosted tools and client-executed tools may have different trust boundaries."
+      ],
+      "recommended": {
+        "action": "Drive the real Responses-based loop.",
+        "authority": "Use external authorization for client tools and explicit provider controls for hosted capabilities.",
+        "resource": "Observe the authoritative destination state.",
+        "lifecycle": "Use your application/hosting lifecycle plus any hosted environment lifecycle you depend on.",
+        "supervision": "Put high-consequence intervention outside the model loop.",
+        "evidence": "Correlate response/tool events with resource and authorization logs."
+      },
+      "docs_url": "https://developers.openai.com/api/docs/guides/agents"
+    },
+    {
+      "id": "anthropic-managed-agents",
+      "name": "Claude Managed Agents",
+      "vendor": "Anthropic",
+      "ownership": "managed",
+      "status": "beta",
+      "summary": "Anthropic hosts the agent harness and can host the execution environment; sessions are stateful and may use built-in tools, sandboxes, or MCP connections.",
+      "action_driver": "Managed Agent session/event API",
+      "useful_hooks": [
+        "session events",
+        "custom-tool events",
+        "environment/sandbox state",
+        "MCP tool configuration"
+      ],
+      "not_enough": [
+        "Session events alone do not establish resource truth.",
+        "Built-in or hosted tools are distinct provider-side action paths that need matching evidence."
+      ],
+      "recommended": {
+        "action": "Create and steer real managed sessions.",
+        "authority": "Use environment/tool policies plus external resource/IAM controls; do not rely on the agent configuration as the sole security boundary.",
+        "resource": "Inspect protected resources independently.",
+        "lifecycle": "Use Managed Agent environment/session controls and the hosting control plane for any self-hosted environment.",
+        "supervision": "Use an operator/policy path outside the agent session for A3+.",
+        "evidence": "Combine session events with resource, IAM, and environment logs."
+      },
+      "docs_url": "https://platform.claude.com/docs/en/managed-agents/overview"
+    },
+    {
+      "id": "claude-agent-sdk",
+      "name": "Claude Agent SDK",
+      "vendor": "Anthropic",
+      "ownership": "application",
+      "status": "current",
+      "summary": "Anthropic's agent harness runs in a process you operate, so the application owns the runtime and local tool execution boundary.",
+      "action_driver": "Claude Agent SDK client/query session",
+      "useful_hooks": [
+        "tool use",
+        "hooks",
+        "permissions",
+        "session lifecycle",
+        "application logging"
+      ],
+      "not_enough": [
+        "Hooks executing inside the same unrestricted process are not independent enforcement.",
+        "SDK tool success text is not resource-side proof."
+      ],
+      "recommended": {
+        "action": "Exercise the real SDK session and tool path.",
+        "authority": "Back permissions with OS/cloud/resource controls for consequential effects.",
+        "resource": "Observe the destination independently.",
+        "lifecycle": "Control the SDK process/container/service externally.",
+        "supervision": "Keep the only stop/restrict path outside generated-code privileges.",
+        "evidence": "Combine SDK hooks/events with authoritative resource and IAM logs."
+      },
+      "docs_url": "https://platform.claude.com/docs/en/managed-agents/migration"
+    },
+    {
+      "id": "anthropic-messages-custom",
+      "name": "Claude Messages API / custom loop",
+      "vendor": "Anthropic",
+      "ownership": "application",
+      "status": "current",
+      "summary": "You write the agent loop and execute client tools; server tools execute on Anthropic's side.",
+      "action_driver": "Your Messages/tool-use loop",
+      "useful_hooks": [
+        "tool_use blocks",
+        "manual tool loop",
+        "application middleware",
+        "server-tool results"
+      ],
+      "not_enough": [
+        "Client and server tools have different execution boundaries.",
+        "The model's tool request or returned text does not establish that an effect occurred."
+      ],
+      "recommended": {
+        "action": "Drive the production Messages/tool loop.",
+        "authority": "Apply resource/IAM or policy-gateway controls before consequential client execution.",
+        "resource": "Query authoritative state after actions.",
+        "lifecycle": "Use application and hosting controls.",
+        "supervision": "Use an out-of-band operator/policy path for A3+.",
+        "evidence": "Preserve message/tool records plus external resource/audit records."
+      },
+      "docs_url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview"
+    },
+    {
+      "id": "google-adk",
+      "name": "Google Agent Development Kit (ADK)",
+      "vendor": "Google",
+      "ownership": "application_or_managed",
+      "status": "current",
+      "summary": "ADK can run locally or on Google-hosted runtimes; agent, model, tool, session, and callback surfaces provide orchestration hooks while cloud identity and resources provide stronger boundaries.",
+      "action_driver": "ADK runner/workflow or deployed agent endpoint",
+      "useful_hooks": [
+        "agent/model/tool callbacks",
+        "session/event service",
+        "Agent Runtime or Cloud Run/GKE deployment hooks",
+        "tool/MCP configuration"
+      ],
+      "not_enough": [
+        "Callbacks are orchestration hooks, not automatically independent control.",
+        "Session state is not proof of external resource effects."
+      ],
+      "recommended": {
+        "action": "Use the real ADK runner or deployed endpoint.",
+        "authority": "Use service accounts/workload identity and resource IAM.",
+        "resource": "Read Google Cloud or application resource state independently.",
+        "lifecycle": "Use Agent Runtime, Cloud Run, GKE, or local process controls as deployed.",
+        "supervision": "Use cloud/operator control outside the agent's service identity.",
+        "evidence": "Combine ADK events/traces with Cloud Audit Logs and resource truth."
+      },
+      "docs_url": "https://google.github.io/adk-docs/"
+    },
+    {
+      "id": "microsoft-agent-framework",
+      "name": "Microsoft Agent Framework",
+      "vendor": "Microsoft",
+      "ownership": "application_or_remote",
+      "status": "current",
+      "summary": "Agent Framework supports agents, workflows, harness agents, middleware, sessions, and multiple hosting models; integrations may be application-owned or remote.",
+      "action_driver": "Agent run, workflow execution, or harness-agent entry point",
+      "useful_hooks": [
+        "agent middleware",
+        "workflow events/checkpoints",
+        "sessions",
+        "HITL",
+        "hosting integrations"
+      ],
+      "not_enough": [
+        "Middleware running with actor-equivalent authority is not an independent enforcement boundary.",
+        "Workflow state does not establish external resource truth."
+      ],
+      "recommended": {
+        "action": "Exercise the same Agent Framework agent/workflow/harness route used in production.",
+        "authority": "Use Entra/RBAC, workload identity, resource authorization, or a separate policy layer.",
+        "resource": "Inspect the destination service independently.",
+        "lifecycle": "Use the selected self-hosted/Azure Functions/durable hosting control plane.",
+        "supervision": "Use authenticated operator/governance controls outside actor authority.",
+        "evidence": "Combine framework events/checkpoints with Azure/resource audit."
+      },
+      "docs_url": "https://learn.microsoft.com/en-us/agent-framework/"
+    },
+    {
+      "id": "langgraph",
+      "name": "LangGraph / LangChain agents",
+      "vendor": "LangChain",
+      "ownership": "application_or_managed",
+      "status": "current",
+      "summary": "Graph execution, checkpoints, interrupts, and deployment runtimes provide durable orchestration surfaces; the protected resource remains the authoritative effect oracle.",
+      "action_driver": "Graph invocation / agent run / tool node",
+      "useful_hooks": [
+        "middleware/callbacks",
+        "checkpoints",
+        "interrupts and resume",
+        "deployment run events"
+      ],
+      "not_enough": [
+        "A checkpoint proves orchestration state, not the external effect.",
+        "Human-in-the-loop interrupts are not a substitute for resource-side authorization if the actor can bypass the interrupted path."
+      ],
+      "recommended": {
+        "action": "Run the real graph/tool path.",
+        "authority": "Use IAM/policy gateway/resource authorization outside graph state.",
+        "resource": "Read database/API/cloud/queue state independently.",
+        "lifecycle": "Use LangSmith Deployment, Kubernetes, process, or cloud lifecycle controls as applicable.",
+        "supervision": "Use a supervisor/policy path outside the acting principal.",
+        "evidence": "Combine graph/checkpoint/run events with authoritative resource evidence."
+      },
+      "docs_url": "https://docs.langchain.com/oss/python/langgraph/overview"
+    },
+    {
+      "id": "crewai",
+      "name": "CrewAI",
+      "vendor": "CrewAI",
+      "ownership": "application",
+      "status": "current",
+      "summary": "CrewAI combines agents, crews, and flows; flows can provide the surrounding state/control workflow while crews perform delegated agent work.",
+      "action_driver": "Flow/crew kickoff and task/tool execution",
+      "useful_hooks": [
+        "flow events/state",
+        "crew/task lifecycle",
+        "tools",
+        "MCP connections",
+        "HITL"
+      ],
+      "not_enough": [
+        "Agent roles and names are descriptive, not authenticated security identities.",
+        "Flow or crew state does not prove a protected resource changed."
+      ],
+      "recommended": {
+        "action": "Exercise the real flow/crew route.",
+        "authority": "Bind tools to external IAM/policy/resource controls.",
+        "resource": "Observe the destination independently.",
+        "lifecycle": "Use the application's worker/process/container controls.",
+        "supervision": "Keep intervention outside the crew's own model/tool authority.",
+        "evidence": "Combine flow/crew telemetry with resource-side audit."
+      },
+      "docs_url": "https://docs.crewai.com/"
+    },
+    {
+      "id": "custom-local",
+      "name": "Custom / local open-weight stack",
+      "vendor": "Independent",
+      "ownership": "application",
+      "status": "current",
+      "summary": "Custom Python, Ollama, vLLM, llama.cpp, and similar stacks give you direct control, but Asimov still requires separation between actor, authority, observation, and supervision for higher assurance.",
+      "action_driver": "Your orchestrator / model server / tool dispatcher",
+      "useful_hooks": [
+        "tool dispatcher",
+        "process events",
+        "local audit",
+        "OS/container controls"
+      ],
+      "not_enough": [
+        "Owning every component does not make them independent.",
+        "A single unrestricted process cannot credibly be both actor and sole A3+ supervisor."
+      ],
+      "recommended": {
+        "action": "Use the real orchestrator/tool dispatcher.",
+        "authority": "Use OS identities, a policy service, short-lived credentials, or resource authorization.",
+        "resource": "Inspect files/DB/API/service state from a separate identity/process where possible.",
+        "lifecycle": "Use launchd/systemd/Windows SCM/containers/Kubernetes as deployed.",
+        "supervision": "Use a separate process/service or OS/infrastructure boundary.",
+        "evidence": "Combine local runtime events with resource and OS/service audit."
+      },
+      "docs_url": "https://github.com/asimov-safety/asimov/blob/main/docs/IMPLEMENTATION-HANDBOOK.md"
+    },
+    {
+      "id": "aws-agentcore-runtime",
+      "name": "Amazon Bedrock AgentCore Runtime",
+      "vendor": "AWS",
+      "ownership": "managed",
+      "status": "current",
+      "summary": "AWS provides a framework-agnostic managed runtime for agent or tool code, with isolated sessions and integrations such as AgentCore Identity, Gateway, Memory, Browser, Code Interpreter, MCP, and A2A.",
+      "action_driver": "InvokeAgentRuntime endpoint / deployed agent service contract",
+      "useful_hooks": [
+        "runtime invocation/session lifecycle",
+        "AgentCore Gateway and MCP/A2A integration",
+        "AgentCore Identity",
+        "CloudWatch/AgentCore observability",
+        "managed or account-hosted runtime infrastructure"
+      ],
+      "not_enough": [
+        "AgentCore session/output records do not by themselves prove that a protected external resource changed.",
+        "Session microVM isolation is valuable containment but does not automatically provide independent authorization or supervision for every consequential action."
+      ],
+      "recommended": {
+        "action": "Invoke the real AgentCore Runtime endpoint and enumerate every hosted tool/Gateway/MCP/A2A path used by the deployed agent.",
+        "authority": "Use AWS IAM/STS, AgentCore Identity/Gateway policy, and resource-side authorization; preserve the distinction between runtime invocation permission and downstream resource authority.",
+        "resource": "Inspect the authoritative AWS/application/database/API resource using an assessor identity unavailable to the actor.",
+        "lifecycle": "Use AgentCore Runtime endpoint/session controls and the AWS control plane; include long-running/background work and runtime instance/session termination in lifecycle tests.",
+        "supervision": "Keep the A3+ restrict/stop path in authenticated AWS/operator controls outside the agent code and its downstream credentials.",
+        "evidence": "Combine AgentCore/CloudWatch runtime events, IAM/CloudTrail records, Gateway/tool events, and resource-side audit."
+      },
+      "docs_url": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/agents-tools-runtime.html",
+      "note": "AgentCore Runtime is framework- and model-agnostic and supports isolated managed sessions as well as instance-based deployments."
+    },
+    {
+      "id": "microsoft-foundry-agent-service",
+      "name": "Microsoft Foundry Agent Service",
+      "vendor": "Microsoft",
+      "ownership": "managed",
+      "status": "current",
+      "summary": "Microsoft Foundry Agent Service manages agent definitions and can host agent applications; prompt agents and hosted agents move model/tool configuration or orchestration into the Foundry service.",
+      "action_driver": "Foundry Agent Service agent endpoint / Agent Framework FoundryAgent integration",
+      "useful_hooks": [
+        "agent/conversation/response runtime",
+        "Prompt Agent definitions",
+        "Hosted Agent endpoints",
+        "Foundry tools/toolboxes",
+        "Foundry/Azure monitoring and RBAC"
+      ],
+      "not_enough": [
+        "Foundry conversation/response state does not prove that an external resource effect occurred.",
+        "A Foundry-managed tool or hosted agent is a provider-side action path and must stay in the declared action surface."
+      ],
+      "recommended": {
+        "action": "Exercise the real Foundry Prompt Agent or Hosted Agent endpoint used by production.",
+        "authority": "Use Foundry/Azure RBAC plus resource-side authorization and managed/workload identities for downstream effects.",
+        "resource": "Inspect the protected Azure/application/SaaS resource independently.",
+        "lifecycle": "Use Foundry deployment/version controls plus the hosting control plane for Hosted Agents and any connected services.",
+        "supervision": "Use authenticated Foundry/Azure/operator controls outside the agent's downstream effective authority.",
+        "evidence": "Combine Foundry agent/runtime telemetry with Azure activity/resource logs, RBAC/IAM evidence, and destination-resource audit."
+      },
+      "docs_url": "https://learn.microsoft.com/en-us/azure/foundry/agents/",
+      "note": "Foundry supports managed prompt agents and hosted custom agent applications; Agent Framework can connect to both."
+    },
+    {
+      "id": "google-agent-runtime",
+      "name": "Google Gemini Enterprise Agent Runtime (Vertex AI Agent Engine)",
+      "vendor": "Google",
+      "ownership": "managed",
+      "status": "current",
+      "summary": "Google's managed agent runtime, previously Vertex AI Agent Engine, hosts and scales custom agents with managed sessions, memory, observability, evaluation, and sandbox/code-execution capabilities.",
+      "action_driver": "Managed Agent Runtime endpoint / deployed agent application",
+      "useful_hooks": [
+        "managed runtime invocation",
+        "sessions and memory",
+        "code execution/sandbox",
+        "A2A/MCP integrations",
+        "Agent Platform observability and evaluation"
+      ],
+      "not_enough": [
+        "Managed session and observability records do not replace authoritative destination-resource evidence.",
+        "Managed code-execution isolation does not by itself prove that downstream IAM and human intervention are independent of the agent."
+      ],
+      "recommended": {
+        "action": "Invoke the real managed Agent Runtime endpoint and enumerate hosted tools, code execution, MCP, A2A, and downstream APIs as separate action paths.",
+        "authority": "Use Google Cloud service accounts/workload identity and resource IAM; keep downstream credentials scoped independently of the agent's narrative/tool logic.",
+        "resource": "Read the target Google Cloud/application/database/API resource independently.",
+        "lifecycle": "Use Agent Runtime deployment/session controls and the surrounding Google Cloud control plane.",
+        "supervision": "Keep A3+ intervention in authenticated Agent Platform/Google Cloud/operator controls outside the agent service identity.",
+        "evidence": "Combine Agent Runtime observability/session events with Cloud Audit Logs, IAM records, and resource-side audit."
+      },
+      "docs_url": "https://docs.cloud.google.com/agent-builder",
+      "note": "Google documentation is transitioning Vertex AI Agent Engine naming to Agent Runtime within Gemini Enterprise Agent Platform."
+    }
+  ],
+  "integration_options": [
+    {
+      "id": "mcp",
+      "name": "Model Context Protocol (MCP)",
+      "category": "tooling",
+      "summary": "Treat every connected MCP server/tool family as part of the consequential action surface. MCP is a transport/integration boundary, not one universal security boundary.",
+      "warning": "Do not collapse all MCP tools into a single 'MCP' capability or assume the client can independently prove what a server did.",
+      "docs_url": "https://modelcontextprotocol.io/docs/"
+    }
+  ],
+  "hosting_options": [
+    {
+      "id": "local-process",
+      "name": "Local process / workstation",
+      "lifecycle": "OS process/service controls",
+      "warning": "Use a separate process/identity for independent supervision where the profile requires it."
+    },
+    {
+      "id": "docker",
+      "name": "Docker / single-host containers",
+      "lifecycle": "container/process controls",
+      "warning": "Do not give the actor Docker-socket authority if container isolation is part of the claimed boundary."
+    },
+    {
+      "id": "kubernetes",
+      "name": "Kubernetes",
+      "lifecycle": "Kubernetes API / workload control plane",
+      "warning": "Use workload identity and exercise restart, partition, and common-mode dependencies for higher profiles."
+    },
+    {
+      "id": "aws",
+      "name": "AWS",
+      "lifecycle": "AWS service / orchestration control plane",
+      "warning": "Measure revocation at the protected resource, not merely at IAM API acknowledgement."
+    },
+    {
+      "id": "azure",
+      "name": "Microsoft Azure",
+      "lifecycle": "Azure hosting / orchestration control plane",
+      "warning": "Managed identity and token lifetime/propagation belong in revocation semantics."
+    },
+    {
+      "id": "gcp",
+      "name": "Google Cloud",
+      "lifecycle": "Google Cloud hosting / Agent Runtime / GKE / Cloud Run",
+      "warning": "Service-account and resource-policy propagation belong in revocation semantics."
+    }
+  ],
+  "authority_options": [
+    {
+      "id": "aws-iam",
+      "name": "AWS IAM / STS",
+      "hint": "roles, session/resource policies, short-lived credentials, explicit deny"
+    },
+    {
+      "id": "azure-entra-rbac",
+      "name": "Microsoft Entra ID / Azure RBAC",
+      "hint": "managed identities, RBAC, resource policies, Key Vault or equivalent"
+    },
+    {
+      "id": "gcp-iam",
+      "name": "Google Cloud IAM",
+      "hint": "service accounts, workload identity, resource IAM, short-lived credentials"
+    },
+    {
+      "id": "policy-gateway",
+      "name": "External policy / authorization gateway",
+      "hint": "central admission/revocation outside the acting principal"
+    },
+    {
+      "id": "os-identity",
+      "name": "OS identity / ACL / service account",
+      "hint": "process identities, filesystem/service permissions, job/service boundaries"
+    },
+    {
+      "id": "application-authz",
+      "name": "Application authorization service",
+      "hint": "use only when it is enforceable and not bypassable by alternate actor routes"
+    }
+  ],
+  "resource_options": [
+    {
+      "id": "postgresql",
+      "name": "PostgreSQL / SQL database",
+      "oracle": "separate read/audit identity; authoritative row/event/audit state"
+    },
+    {
+      "id": "http-api",
+      "name": "HTTP / SaaS API",
+      "oracle": "authoritative GET/state endpoint or server-side audit"
+    },
+    {
+      "id": "filesystem",
+      "name": "Filesystem",
+      "oracle": "separate process/identity or disposable externally inspected workspace"
+    },
+    {
+      "id": "object-storage",
+      "name": "Object storage",
+      "oracle": "object existence/version/metadata plus service audit"
+    },
+    {
+      "id": "queue",
+      "name": "Queue / background jobs",
+      "oracle": "enqueue, admission, execution, cancellation, retry, and orphan state"
+    },
+    {
+      "id": "cloud-resource",
+      "name": "Cloud control-plane resource",
+      "oracle": "provider API/resource state plus cloud audit"
+    },
+    {
+      "id": "custom-resource",
+      "name": "Other protected resource",
+      "oracle": "define a source of truth independent of the actor's own narrative"
+    }
+  ],
+  "evidence_options": [
+    {
+      "id": "opentelemetry",
+      "name": "OpenTelemetry",
+      "role": "correlated runtime events; not sole proof of external effects"
+    },
+    {
+      "id": "cloud-audit",
+      "name": "Cloud/provider audit logs",
+      "role": "identity, authorization, and provider/resource events"
+    },
+    {
+      "id": "resource-audit",
+      "name": "Resource-native audit",
+      "role": "effect truth at the protected system"
+    },
+    {
+      "id": "application-events",
+      "name": "Application/framework events",
+      "role": "proposal, dispatch, orchestration, and lifecycle context"
+    }
+  ]
+}
