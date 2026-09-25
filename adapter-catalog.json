@@ -355,6 +355,96 @@
         "evidence": "Combine local runtime events with resource and OS/service audit."
       },
       "docs_url": "https://github.com/asimov-safety/asimov/blob/main/docs/IMPLEMENTATION-HANDBOOK.md"
+    },
+    {
+      "id": "aws-agentcore-runtime",
+      "name": "Amazon Bedrock AgentCore Runtime",
+      "vendor": "AWS",
+      "ownership": "managed",
+      "status": "current",
+      "summary": "AWS provides a framework-agnostic managed runtime for agent or tool code, with isolated sessions and integrations such as AgentCore Identity, Gateway, Memory, Browser, Code Interpreter, MCP, and A2A.",
+      "action_driver": "InvokeAgentRuntime endpoint / deployed agent service contract",
+      "useful_hooks": [
+        "runtime invocation/session lifecycle",
+        "AgentCore Gateway and MCP/A2A integration",
+        "AgentCore Identity",
+        "CloudWatch/AgentCore observability",
+        "managed or account-hosted runtime infrastructure"
+      ],
+      "not_enough": [
+        "AgentCore session/output records do not by themselves prove that a protected external resource changed.",
+        "Session microVM isolation is valuable containment but does not automatically provide independent authorization or supervision for every consequential action."
+      ],
+      "recommended": {
+        "action": "Invoke the real AgentCore Runtime endpoint and enumerate every hosted tool/Gateway/MCP/A2A path used by the deployed agent.",
+        "authority": "Use AWS IAM/STS, AgentCore Identity/Gateway policy, and resource-side authorization; preserve the distinction between runtime invocation permission and downstream resource authority.",
+        "resource": "Inspect the authoritative AWS/application/database/API resource using an assessor identity unavailable to the actor.",
+        "lifecycle": "Use AgentCore Runtime endpoint/session controls and the AWS control plane; include long-running/background work and runtime instance/session termination in lifecycle tests.",
+        "supervision": "Keep the A3+ restrict/stop path in authenticated AWS/operator controls outside the agent code and its downstream credentials.",
+        "evidence": "Combine AgentCore/CloudWatch runtime events, IAM/CloudTrail records, Gateway/tool events, and resource-side audit."
+      },
+      "docs_url": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/agents-tools-runtime.html",
+      "note": "AgentCore Runtime is framework- and model-agnostic and supports isolated managed sessions as well as instance-based deployments."
+    },
+    {
+      "id": "microsoft-foundry-agent-service",
+      "name": "Microsoft Foundry Agent Service",
+      "vendor": "Microsoft",
+      "ownership": "managed",
+      "status": "current",
+      "summary": "Microsoft Foundry Agent Service manages agent definitions and can host agent applications; prompt agents and hosted agents move model/tool configuration or orchestration into the Foundry service.",
+      "action_driver": "Foundry Agent Service agent endpoint / Agent Framework FoundryAgent integration",
+      "useful_hooks": [
+        "agent/conversation/response runtime",
+        "Prompt Agent definitions",
+        "Hosted Agent endpoints",
+        "Foundry tools/toolboxes",
+        "Foundry/Azure monitoring and RBAC"
+      ],
+      "not_enough": [
+        "Foundry conversation/response state does not prove that an external resource effect occurred.",
+        "A Foundry-managed tool or hosted agent is a provider-side action path and must stay in the declared action surface."
+      ],
+      "recommended": {
+        "action": "Exercise the real Foundry Prompt Agent or Hosted Agent endpoint used by production.",
+        "authority": "Use Foundry/Azure RBAC plus resource-side authorization and managed/workload identities for downstream effects.",
+        "resource": "Inspect the protected Azure/application/SaaS resource independently.",
+        "lifecycle": "Use Foundry deployment/version controls plus the hosting control plane for Hosted Agents and any connected services.",
+        "supervision": "Use authenticated Foundry/Azure/operator controls outside the agent's downstream effective authority.",
+        "evidence": "Combine Foundry agent/runtime telemetry with Azure activity/resource logs, RBAC/IAM evidence, and destination-resource audit."
+      },
+      "docs_url": "https://learn.microsoft.com/en-us/azure/foundry/agents/",
+      "note": "Foundry supports managed prompt agents and hosted custom agent applications; Agent Framework can connect to both."
+    },
+    {
+      "id": "google-agent-runtime",
+      "name": "Google Gemini Enterprise Agent Runtime (Vertex AI Agent Engine)",
+      "vendor": "Google",
+      "ownership": "managed",
+      "status": "current",
+      "summary": "Google's managed agent runtime, previously Vertex AI Agent Engine, hosts and scales custom agents with managed sessions, memory, observability, evaluation, and sandbox/code-execution capabilities.",
+      "action_driver": "Managed Agent Runtime endpoint / deployed agent application",
+      "useful_hooks": [
+        "managed runtime invocation",
+        "sessions and memory",
+        "code execution/sandbox",
+        "A2A/MCP integrations",
+        "Agent Platform observability and evaluation"
+      ],
+      "not_enough": [
+        "Managed session and observability records do not replace authoritative destination-resource evidence.",
+        "Managed code-execution isolation does not by itself prove that downstream IAM and human intervention are independent of the agent."
+      ],
+      "recommended": {
+        "action": "Invoke the real managed Agent Runtime endpoint and enumerate hosted tools, code execution, MCP, A2A, and downstream APIs as separate action paths.",
+        "authority": "Use Google Cloud service accounts/workload identity and resource IAM; keep downstream credentials scoped independently of the agent's narrative/tool logic.",
+        "resource": "Read the target Google Cloud/application/database/API resource independently.",
+        "lifecycle": "Use Agent Runtime deployment/session controls and the surrounding Google Cloud control plane.",
+        "supervision": "Keep A3+ intervention in authenticated Agent Platform/Google Cloud/operator controls outside the agent service identity.",
+        "evidence": "Combine Agent Runtime observability/session events with Cloud Audit Logs, IAM records, and resource-side audit."
+      },
+      "docs_url": "https://docs.cloud.google.com/agent-builder",
+      "note": "Google documentation is transitioning Vertex AI Agent Engine naming to Agent Runtime within Gemini Enterprise Agent Platform."
     }
   ],
   "integration_options": [
